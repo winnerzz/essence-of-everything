@@ -360,6 +360,9 @@ const ARTICLES = [
   { id: 'mindalgo',     cat: 'cognition', title: '心智的算法本质',   sub: '预测·幻觉·信念机器',       file: '心智的算法本质.html',   tags: ['预测引擎','信息压缩','信念更新','受控幻觉'] },
   { id: 'complex',      cat: 'systems',   title: '复杂系统的本质',   sub: '涌现·脆弱·非线性',         file: '复杂系统的本质.html',   tags: ['涌现','正反馈','临界态','反脆弱'] },
   { id: 'network',      cat: 'systems',   title: '复杂网络的本质',   sub: '节点·连接·权力拓扑',       file: '复杂网络的本质.html',   tags: ['超级节点','优先连接','二八定律','相变'] },
+  { id: 'institution',  cat: 'social',    title: '制度与权力的本质', sub: '暴力·规则·国家命运',       file: '制度与权力的本质.html', tags: ['暴力垄断','激励机制','产权保护','权力约束'] },
+  { id: 'myth',         cat: 'social',    title: '共识与神话的本质', sub: '虚构·协作·统治地球',       file: '共识与神话的本质.html', tags: ['虚构共识','150人极限','有限责任','品牌信仰'] },
+  { id: 'media',        cat: 'social',    title: '语言与媒介的本质', sub: '编码·带宽·现实控制权',     file: '语言与媒介的本质.html', tags: ['有损压缩','命名权','算法投喂','框架劫持'] },
 ];
 
 // Edges: [sourceId, targetId, label]
@@ -401,6 +404,24 @@ const EDGES = [
   ['network',    'civilization', '权力拓扑→地缘格局'],
   ['network',    'cs',           '网络→互联网'],
   ['complex',    'evolution',    '涌现→物种适应'],
+  ['institution','civilization', '制度→文明兴衰'],
+  ['institution','finance',      '产权→金融体系'],
+  ['institution','cognition',    '激励→行为偏差'],
+  ['institution','network',      '权力=网络拓扑'],
+  ['institution','complex',      '制度=复杂系统'],
+  ['myth',       'institution',  '共识→合法性基础'],
+  ['myth',       'finance',      '货币=集体信念'],
+  ['myth',       'cognition',    '故事劫持大脑'],
+  ['myth',       'network',      '共识=网络协议'],
+  ['myth',       'civilization', '神话→文明协作'],
+  ['myth',       'evolution',    '150人极限→虚构突破'],
+  ['media',      'myth',         '语言编码→共识传播'],
+  ['media',      'cognition',    '框架劫持→思维限制'],
+  ['media',      'mindalgo',     '有损压缩→预测偏差'],
+  ['media',      'cs',           '编码协议→信息论'],
+  ['media',      'network',      '算法推荐→信息拓扑'],
+  ['media',      'civilization', '印刷术→科学革命'],
+  ['media',      'institution',  '命名权→权力工具'],
 ];
 
 // ====================================================================
