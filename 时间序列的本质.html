@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>时间序列的本质 — 一场关于周期、记忆与预测未来的推演</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;600;700;900&family=Noto+Sans+SC:wght@300;400;500;700&family=Playfair+Display:ital,wght@0,700;1,700&display=swap" rel="stylesheet">
+<style>
+:root{--ink:#1a1a1a;--paper:#eef2f0;--paper-deep:#dde5e0;--accent:#155e63;--accent-light:#0d9488;--gold:#92400e;--gold-light:#d97706;--teal:#4a1d6a;--muted:#5a6660;--divider:#a8bfb4;--highlight:#ecfdf5}
+*{margin:0;padding:0;box-sizing:border-box}html{scroll-behavior:smooth}
+body{background:var(--paper);color:var(--ink);font-family:'Noto Sans SC',sans-serif;font-weight:400;line-height:2;font-size:17px;-webkit-font-smoothing:antialiased}
+.hero{min-height:100vh;display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center;padding:60px 24px;position:relative;overflow:hidden;background:linear-gradient(160deg,#060e0c 0%,#0c2420 35%,#1a1008 65%,#060e0c 100%)}
+.hero::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse 500px 350px at 30% 40%,rgba(13,148,136,.10) 0%,transparent 70%),radial-gradient(ellipse 400px 400px at 70% 55%,rgba(217,119,6,.07) 0%,transparent 70%);pointer-events:none}
+.hero::after{content:'';position:absolute;inset:0;background-image:repeating-linear-gradient(90deg,transparent,transparent 58px,rgba(13,148,136,.04) 58px,rgba(13,148,136,.04) 60px);pointer-events:none;mask-image:radial-gradient(ellipse 60% 50% at 50% 50%,black 20%,transparent 70%);-webkit-mask-image:radial-gradient(ellipse 60% 50% at 50% 50%,black 20%,transparent 70%)}
+.hero-eyebrow{font-family:'Noto Sans SC',sans-serif;font-weight:300;font-size:14px;letter-spacing:6px;text-transform:uppercase;color:var(--gold-light);opacity:0;animation:fadeUp 1s .3s forwards;margin-bottom:32px;position:relative;z-index:1}
+.hero h1{font-family:'Noto Serif SC',serif;font-weight:900;font-size:clamp(38px,7vw,72px);color:#eef2f0;line-height:1.2;opacity:0;animation:fadeUp 1s .6s forwards;position:relative;z-index:1}
+.hero h1 span{display:block;background:linear-gradient(135deg,var(--accent-light),var(--gold-light));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.hero-subtitle{font-family:'Noto Sans SC',sans-serif;font-weight:300;font-size:clamp(16px,2.5vw,20px);color:rgba(238,242,240,.55);max-width:600px;margin-top:28px;line-height:1.8;opacity:0;animation:fadeUp 1s .9s forwards;position:relative;z-index:1}
+.hero-scroll{position:absolute;bottom:40px;opacity:0;animation:fadeUp 1s 1.2s forwards;z-index:1}
+.hero-scroll span{display:block;width:1px;height:48px;background:linear-gradient(to bottom,var(--gold-light),transparent);margin:0 auto;animation:pulse 2s infinite}
+@keyframes fadeUp{from{opacity:0;transform:translateY(24px)}to{opacity:1;transform:translateY(0)}}
+@keyframes pulse{0%,100%{opacity:.3}50%{opacity:1}}
+.content{max-width:720px;margin:0 auto;padding:80px 24px 120px}
+.chapter{margin-bottom:80px;opacity:0;transform:translateY(30px);transition:opacity .8s ease,transform .8s ease}
+.chapter.visible{opacity:1;transform:translateY(0)}
+.chapter-number{font-family:'Playfair Display',serif;font-size:13px;font-weight:700;letter-spacing:3px;color:var(--accent);text-transform:uppercase;margin-bottom:8px}
+.chapter h2{font-family:'Noto Serif SC',serif;font-weight:700;font-size:clamp(26px,4vw,34px);line-height:1.4;color:var(--ink);margin-bottom:32px}
+.chapter h2::after{content:'';display:block;width:48px;height:3px;background:linear-gradient(to right,var(--accent),var(--gold));margin-top:16px;border-radius:2px}
+.chapter p{margin-bottom:20px;color:#2d2a26}
+.insight-box{background:linear-gradient(135deg,rgba(21,94,99,.08),rgba(21,94,99,.02));border-left:3px solid var(--accent);padding:24px 28px;margin:32px 0;border-radius:0 8px 8px 0;font-family:'Noto Serif SC',serif;font-size:18px;line-height:1.9;color:#1a3032}
+.scene-box{background:#fff;border:1px solid var(--divider);border-radius:12px;padding:28px 32px;margin:32px 0;position:relative;box-shadow:0 2px 16px rgba(0,0,0,.04)}
+.scene-box::before{content:'🌾';position:absolute;top:-16px;left:24px;font-size:28px;background:var(--paper);padding:0 8px}
+.scene-box.wave::before{content:'🌊'}
+.scene-box.echo::before{content:'🔊'}
+.scene-box.storm::before{content:'⛈️'}
+.scene-box.think::before{content:'💡'}
+.scene-box.clock::before{content:'⏰'}
+.scene-box h3{font-family:'Noto Serif SC',serif;font-weight:600;font-size:18px;color:var(--accent);margin-bottom:12px}
+.key-point{background:var(--highlight);padding:3px 8px;border-radius:3px;font-weight:500}
+.chain{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin:24px 0;font-size:15px;font-weight:500;color:var(--muted)}
+.chain .node{background:#fff;border:1px solid var(--divider);padding:6px 14px;border-radius:20px;color:var(--ink);font-size:14px}
+.chain .arrow{color:var(--accent);font-weight:700;font-size:16px}
+.math{font-family:'Playfair Display','Georgia',serif;font-style:italic;color:var(--accent);font-weight:700}
+.section-divider{text-align:center;margin:64px 0;color:var(--divider);font-size:20px;letter-spacing:12px}
+.finale{background:linear-gradient(160deg,#060e0c,#0c2420,#060e0c);color:var(--paper);padding:80px 24px;margin-top:40px}
+.finale-inner{max-width:720px;margin:0 auto}
+.finale h2{font-family:'Noto Serif SC',serif;font-weight:900;font-size:clamp(28px,5vw,38px);background:linear-gradient(135deg,var(--accent-light),var(--gold-light));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;margin-bottom:36px;line-height:1.4}
+.finale p{color:rgba(238,242,240,.8);margin-bottom:20px;line-height:2}
+.finale .insight-box{background:rgba(13,148,136,.08);border-left-color:var(--accent-light);color:rgba(238,242,240,.9)}
+.finale-rules{list-style:none;padding:0;margin:32px 0}
+.finale-rules li{padding:16px 0;border-bottom:1px solid rgba(238,242,240,.1);color:rgba(238,242,240,.85);line-height:1.9;display:flex;gap:12px}
+.finale-rules li .num{font-family:'Playfair Display',serif;font-weight:700;color:var(--gold-light);font-size:20px;flex-shrink:0;width:28px}
+.colophon{text-align:center;padding:40px 24px;color:var(--muted);font-size:13px;letter-spacing:2px}
+.toc{position:fixed;right:24px;top:50%;transform:translateY(-50%);z-index:100;display:flex;flex-direction:column;gap:12px}
+.toc a{display:block;width:8px;height:8px;border-radius:50%;background:var(--divider);transition:all .3s;position:relative;text-decoration:none}
+.toc a.active{background:var(--accent-light);transform:scale(1.4)}
+.toc a::after{content:attr(data-label);position:absolute;right:20px;top:50%;transform:translateY(-50%);white-space:nowrap;font-size:12px;color:var(--muted);opacity:0;transition:opacity .3s;pointer-events:none;font-family:'Noto Sans SC',sans-serif}
+.toc a:hover::after{opacity:1}
+@media(max-width:900px){.toc{display:none}}
+@media(max-width:600px){.content{padding:48px 20px 80px}.scene-box{padding:20px}.insight-box{padding:20px 22px}body{font-size:16px}}
+</style>
+</head>
+<body>
+<nav class="toc" id="toc"><a href="#ch1" data-label="时序的灵魂"></a><a href="#ch2" data-label="农民与四季"></a><a href="#ch3" data-label="自回归与差分"></a><a href="#ch4" data-label="波动率聚集"></a><a href="#ch5" data-label="本质总结"></a></nav>
+
+<header class="hero">
+<div class="hero-eyebrow">A First-Principles Exploration</div>
+<h1>时间序列的本质<span>周期 · 记忆 · 预测未来</span></h1>
+<p class="hero-subtitle">一场从农民记录气温出发，推演到 ARIMA、GARCH 与金融波动率底层逻辑的思维旅程。<br>没有公式堆砌，只有时间长河中的节奏直觉。</p>
+<div class="hero-scroll"><span></span></div>
+</header>
+
+<main class="content">
+
+<section class="chapter" id="ch1">
+<div class="chapter-number">Chapter I</div>
+<h2>时序的灵魂：数据有记忆，今天脱胎于昨天</h2>
+
+<p>在传统统计学里，有一个根深蒂固的假设——每一次观测都是独立的。你抽样1000个人测身高，你默认张三的身高和李四的身高之间没有关系。每个数据点都像一颗独立的骰子。</p>
+
+<p>时间序列分析做的第一件事，就是<strong>公然违反这个假设</strong>。</p>
+
+<p>因为时间序列数据的本质就是——<span class="key-point">今天的数据和昨天的数据之间有关系。而且这种关系不是偶然的，而是结构性的。</span></p>
+
+<p>今天的气温和昨天的气温相关。今天的股价和昨天的股价相关。今天的GDP和去年同期的GDP相关。这种"前后依赖"不是噪音——它恰恰是信号本身。</p>
+
+<div class="insight-box">
+时间序列分析的本质，用一句话说：<br><br>
+<strong>它是研究"有记忆的数据"的数学。</strong><br><br>
+传统统计学看到的是一把散落的弹珠——每颗独立、无序。时间序列看到的是一条河流——每一滴水都与前一滴相连，水流的方向、速度和波纹都包含着关于未来的信息。<br><br>
+它要回答的核心问题是：<strong>数据的过去，能告诉我们关于未来的什么？</strong>
+</div>
+
+<div class="chain">
+<span class="node">传统统计：每次抽样独立</span>
+<span class="arrow">⇌</span>
+<span class="node">时间序列：数据有记忆</span>
+<span class="arrow">→</span>
+<span class="node">核心问题：过去能预测未来吗？</span>
+</div>
+</section>
+
+<div class="section-divider">· · ·</div>
+
+<section class="chapter" id="ch2">
+<div class="chapter-number">Chapter II</div>
+<h2>原始模型：一个农民、一支温度计，和时间的三副面孔</h2>
+
+<div class="scene-box">
+<h3>场景设定：农民老王的温度日记</h3>
+<p>老王在村口立了一支温度计，每天早上记一次温度。记了整整十年。</p>
+<p>他把数据画成一条长长的曲线。远看，这条曲线在缓慢上升（全球变暖）。中看，它有明显的一年一个周期的起伏（四季轮回）。近看，每天的温度在上下小幅跳动（随机天气波动）。</p>
+</div>
+
+<p>时间序列分析的第一个大招，就是<strong>把这条复杂的曲线拆成三个干净的组件</strong>——</p>
+
+<div class="scene-box clock">
+<h3>时间的三副面孔</h3>
+<p><strong>① 趋势（Trend）——缓慢的老去</strong></p>
+<p>十年里，平均温度每年上升0.02度。这是一条平滑的、缓慢上升的线。它代表的是数据中最长期、最宏观的方向。就像一个人从年轻到衰老——整体方向明确，但过程非常缓慢。</p>
+<p><strong>② 季节性（Seasonality）——确定的轮回</strong></p>
+<p>每年夏天热、冬天冷。这个周期性波动极其规律，每12个月重复一次。它就像一首永远在循环播放的旋律——你知道它会回来，你甚至知道它什么时候回来。</p>
+<p><strong>③ 残差（Residual）——命运的微风</strong></p>
+<p>剥掉趋势和季节性之后剩下的部分。某一天突然来了一股寒流、某一天异常闷热——这些是不可预测的随机波动。它是"命运"——是你的模型永远无法完全捕捉的那部分不确定性。</p>
+</div>
+
+<div class="insight-box">
+<strong>时间序列 = 趋势 + 季节性 + 残差</strong><br><br>
+这个拆解看似简单，但它蕴含着极其深刻的哲学：<br><br>
+趋势是"历史的大方向"——它告诉你世界在缓慢地变化。<br>
+季节性是"历史的韵律"——它告诉你某些模式会周期性地重演。<br>
+残差是"历史的沉默"——它告诉你有些东西是你永远猜不到的。<br><br>
+<strong>预测的艺术，就是尽可能多地从前两者中提取信号，然后对第三者保持谦逊。</strong>
+</div>
+
+<div class="chain">
+<span class="node">原始曲线（复杂）</span>
+<span class="arrow">→</span>
+<span class="node">趋势（缓慢方向）</span>
+<span class="arrow">+</span>
+<span class="node">季节性（确定轮回）</span>
+<span class="arrow">+</span>
+<span class="node">残差（随机命运）</span>
+</div>
+
+<p>拆完了之后呢？最关键的问题来了——那个"残差"真的是纯随机的吗？有没有可能，连残差里也藏着某种可以利用的规律？</p>
+</section>
+
+<div class="section-divider">· · ·</div>
+
+<section class="chapter" id="ch3">
+<div class="chapter-number">Chapter III</div>
+<h2>自回归与差分：历史的回音与虚假趋势的剥离</h2>
+
+<p>把趋势和季节性拆掉之后，你盯着剩下的残差曲线看了一会儿。它看起来很随机——但你隐约感觉到一些东西：<strong>如果昨天的残差偏高，今天的似乎也倾向于偏高一点。</strong></p>
+
+<p>也就是说——残差里也有"记忆"。</p>
+
+<p>这就是<strong>自回归（Auto-Regression, AR）</strong>的入口。</p>
+
+<div class="scene-box echo">
+<h3>自回归：我是我自己的回声</h3>
+<p>自回归的核心思想惊人地简洁：</p>
+<p><strong>今天的值 = 昨天的值 × 一个系数 + 今天的"意外"</strong></p>
+<p>用数学写：<span class="math">X(t) = φ · X(t-1) + ε(t)</span></p>
+<p>φ 就是"记忆的强度"。如果 φ = 0.8，说明今天80%由昨天决定，20%由今天的随机意外决定。如果 φ = 0，今天和昨天无关——纯随机。如果 φ = 1，今天完全由昨天决定——这就是随机游走。</p>
+<p>你还可以把记忆延伸得更远：今天 = 昨天 × φ₁ + 前天 × φ₂ + 大前天 × φ₃ + 意外。这就是高阶自回归。</p>
+<p><strong>自回归不是在说"历史决定未来"。它是在说"历史在未来投下了影子，影子的长度和浓淡是可以被测量的"。</strong></p>
+</div>
+
+<p>但自回归有一个致命的前提：<span class="key-point">数据必须是"平稳的"——均值和方差不随时间变化。</span></p>
+
+<p>气温数据有上升趋势，GDP数据在持续增长——它们不平稳。如果你直接对不平稳的数据做自回归，会得出荒谬的结论——比如"冰淇淋销量预测了溺水人数"（两者都有夏季上升趋势，但这只是"虚假回归"）。</p>
+
+<div class="scene-box think">
+<h3>差分：剥掉虚假的外衣</h3>
+<p>怎么让数据变平稳？最简单也最强大的方法——<strong>差分</strong>。</p>
+<p>不看"今天的值是多少"，而看"今天比昨天变化了多少"。</p>
+<p>原来的数据可能在持续上升（不平稳），但"每天的变化量"可能围绕零上下波动（平稳了）。</p>
+<p>这就像你不看一个人的身高（持续增长），而看他<strong>每年长了多少</strong>（可能在波动但没有趋势）。</p>
+<p><strong>差分的本质：剔除趋势，暴露真正的动态结构。</strong></p>
+</div>
+
+<div class="insight-box">
+现在你可以理解 <strong>ARIMA</strong> 这个名字了：<br><br>
+<strong>AR</strong>（Auto-Regressive）= 自回归，用过去的值预测现在。<br>
+<strong>I</strong>（Integrated）= 差分的逆操作。数据先差分变平稳，建完模后再"积分回去"还原量级。<br>
+<strong>MA</strong>（Moving Average）= 移动平均，用过去的"意外"（误差项）来修正预测。<br><br>
+ARIMA 不是一个魔法公式——它是一个<strong>三步工作流</strong>：<br>
+① 差分让数据平稳（剥掉虚假趋势）<br>
+② AR 捕捉数据自身的记忆（历史的回声）<br>
+③ MA 利用预测误差的规律来自我修正<br><br>
+<strong>它的哲学是：历史不会简单重复，但历史的节奏——那种"快了就慢、高了就低"的回弹感——是可以被建模的。</strong>
+</div>
+
+<div class="chain">
+<span class="node">原始数据（不平稳）</span>
+<span class="arrow">→</span>
+<span class="node">差分（剥掉趋势）</span>
+<span class="arrow">→</span>
+<span class="node">AR：捕捉历史记忆</span>
+<span class="arrow">+</span>
+<span class="node">MA：利用误差规律</span>
+<span class="arrow">→</span>
+<span class="node">ARIMA</span>
+</div>
+</section>
+
+<div class="section-divider">· · ·</div>
+
+<section class="chapter" id="ch4">
+<div class="chapter-number">Chapter IV</div>
+<h2>波动率聚集：风暴为什么总是成群结队</h2>
+
+<p>ARIMA 模型擅长捕捉数据"均值"层面的规律——数据会涨还是跌、涨多少跌多少。但金融市场有一个它处理不了的诡异现象——</p>
+
+<p><strong>波动率本身也有记忆。</strong></p>
+
+<div class="scene-box storm">
+<h3>波动率聚集：风暴孕育更大的风暴</h3>
+<p>打开任何一段股市K线图。你会发现一个令人不安的规律：</p>
+<p>大幅波动总是扎堆出现——一段时间内股价剧烈震荡（无论涨跌），然后一段时间相对平静，然后又来一波剧烈震荡。</p>
+<p>这不是巧合。<strong>今天波动大，明天大概率也波动大。今天风平浪静，明天大概率还风平浪静。</strong></p>
+<p>波动率（方差）本身是有"惯性"的——恐慌会自我放大，平静也会自我维持。一条坏消息引发恐慌抛售，恐慌抛售引发更大的价格波动，更大的波动引发更多的恐慌——直到这个正反馈循环耗尽能量。</p>
+</div>
+
+<p>ARIMA 假设数据的方差是恒定的。但在金融数据中，方差在剧烈地随时间变化。于是就有了——</p>
+
+<div class="insight-box">
+<strong>GARCH 模型</strong>的核心思想：<br><br>
+ARIMA 对数据的"水平"（均值）建模。GARCH 对数据的"震荡幅度"（方差）建模。<br><br>
+GARCH 说：<strong>今天的波动率 = 昨天的波动率 × 一个衰减系数 + 昨天意外的大小 × 另一个系数</strong><br><br>
+翻译成人话：波动率有惯性（昨天波动大今天也大），而且会被"意外"所激发（一个巨大的异常值会让接下来的波动率飙升）。<br><br>
+GARCH 解释了一个关键的市场现象：<strong>风险不是均匀分布在时间上的。它是聚集的——暴风雨来的时候，几个暴风雨一起来。</strong>这就是为什么金融危机中的损失总是远超人们的预期——人们用平静时期的波动率来估算风险，但风暴来临时，波动率会自我放大到完全不同的量级。
+</div>
+
+<div class="chain">
+<span class="node">ARIMA：均值有记忆</span>
+<span class="arrow">+</span>
+<span class="node">GARCH：波动率也有记忆</span>
+<span class="arrow">→</span>
+<span class="node">风暴扎堆出现的数学解释</span>
+<span class="arrow">→</span>
+<span class="node">风险是聚集的，不是均匀的</span>
+</div>
+</section>
+
+<div class="section-divider">· · ·</div>
+</main>
+
+<section class="finale" id="ch5">
+<div class="finale-inner">
+<div class="chapter-number" style="color:var(--gold-light)">Chapter V</div>
+<h2>本质总结：建立你的时间预测直觉</h2>
+
+<p>让我们把整条逻辑链串一遍。时间序列数据的灵魂是"有记忆"。分析的第一步是把复杂的曲线拆为趋势、季节性和残差。ARIMA 通过差分剥掉虚假趋势、通过自回归和移动平均捕捉残差中的记忆。而 GARCH 则揭示了连波动率本身都有记忆——风暴会自我放大。</p>
+
+<ul class="finale-rules">
+<li><span class="num">1</span><span><strong>历史不会简单重复，但会押韵。</strong> 时间序列分析的全部信仰建立在一个假设上：过去的模式会以某种变形的方式在未来重现。四季会轮回，经济周期会交替，波动率会聚集又消散。但——重现的是"节奏"，不是"具体的音符"。你可以预测"冬天会冷"，但你不能预测"12月17号会下雪"。<strong>时间序列模型捕捉的是统计上的韵律，不是命运的剧本。</strong></span></li>
+<li><span class="num">2</span><span><strong>预测得越远，越接近瞎猜。</strong> 所有时间序列模型的预测精度都随时间指数级衰减。预测明天的气温很准，预测下周差一些，预测下个月就很模糊，预测明年基本上和猜差不多。因为每一步预测都会累积误差，而这些误差会像滚雪球一样膨胀。<strong>对任何声称能精确预测长期未来的模型，保持最高级别的怀疑。</strong></span></li>
+<li><span class="num">3</span><span><strong>"平稳"是一切建模的前提——而现实世界几乎没有什么是平稳的。</strong> ARIMA 需要平稳数据，我们通过差分来"制造"平稳。但差分只能剔除趋势，不能处理结构性突变（政策剧变、技术革命、疫情冲击）。当世界的底层规则发生了改变，所有基于历史数据训练的模型都会同时失效。<strong>时间序列模型最大的敌人不是随机噪音——而是"世界变了"。</strong></span></li>
+<li><span class="num">4</span><span><strong>波动率的聚集意味着：风险管理不能用"平均"来思考。</strong> 如果你用过去十年的平均日波动率来设定止损线，那么在波动率聚集的风暴期，你的止损会被一天之内连续击穿。GARCH 告诉我们：<strong>风险在时间上不是均匀分布的，它会在某些时段突然放大好几倍。</strong>基于平均波动率做的风控，在风暴来临时毫无意义。</span></li>
+<li><span class="num">5</span><span><strong>黑天鹅永远无法被建模。</strong> 所有的时间序列模型都是基于历史数据训练的——它只能看到过去发生过的模式。一件从未发生过的事——一种全新的金融危机、一场前所未有的疫情、一个颠覆性的技术突破——不在模型的训练数据中，也就不在模型的想象力之中。<strong>模型能帮你管理"已知的不确定性"，但它对"未知的不确定性"完全无能为力。</strong>对未来保持敬畏，不是因为你不够聪明，而是因为未来的本质就包含着超出任何模型能力的真正的新。</span></li>
+</ul>
+
+<div class="insight-box" style="margin-top:48px">
+时间序列分析的终极启示是：<strong>时间是有节奏的，但节奏不等于命运。</strong><br><br>
+你可以听到河水的涟漪声，估计水流的速度，预测下一个波纹大概在哪里。但你预测不了一块从天而降的石头会在何时砸进河里，掀起完全不在你模型里的浪花。<br><br>
+<strong>最好的预测者，不是模型最复杂的那个——而是最清楚自己的模型在什么条件下会失效的那个。</strong>
+</div>
+</div>
+</section>
+
+<div class="colophon">— FIN —</div>
+
+<script>
+const chapters=document.querySelectorAll('.chapter'),tocLinks=document.querySelectorAll('.toc a');
+const observer=new IntersectionObserver(e=>{e.forEach(e=>{e.isIntersecting&&e.target.classList.add('visible')})},{threshold:.15});
+chapters.forEach(c=>observer.observe(c));
+const sections=document.querySelectorAll('.chapter,.finale');
+window.addEventListener('scroll',()=>{let c='';sections.forEach(s=>{window.scrollY>=s.offsetTop-200&&(c=s.id)});tocLinks.forEach(l=>{l.classList.toggle('active',l.getAttribute('href')==='#'+c)})});
+</script>
+</body>
+</html>

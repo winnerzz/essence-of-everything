@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>贝叶斯统计的本质 — 一场关于偏见、证据与信念进化的推演</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;600;700;900&family=Noto+Sans+SC:wght@300;400;500;700&family=Playfair+Display:ital,wght@0,700;1,700&display=swap" rel="stylesheet">
+<style>
+:root{--ink:#1a1a1a;--paper:#f0eef4;--paper-deep:#e0dce8;--accent:#312e81;--accent-light:#6366f1;--gold:#92400e;--gold-light:#d97706;--teal:#581c87;--muted:#5e5a6b;--divider:#b8b2c8;--highlight:#eef2ff}
+*{margin:0;padding:0;box-sizing:border-box}html{scroll-behavior:smooth}
+body{background:var(--paper);color:var(--ink);font-family:'Noto Sans SC',sans-serif;font-weight:400;line-height:2;font-size:17px;-webkit-font-smoothing:antialiased}
+.hero{min-height:100vh;display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center;padding:60px 24px;position:relative;overflow:hidden;background:linear-gradient(160deg,#08061a 0%,#141038 35%,#1a0e20 65%,#08061a 100%)}
+.hero::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse 500px 350px at 35% 40%,rgba(99,102,241,.10) 0%,transparent 70%),radial-gradient(ellipse 400px 400px at 65% 55%,rgba(217,119,6,.07) 0%,transparent 70%);pointer-events:none}
+.hero::after{content:'';position:absolute;inset:0;background-image:radial-gradient(ellipse 200px 200px at 35% 50%,rgba(99,102,241,.06) 0%,transparent 70%),radial-gradient(ellipse 280px 280px at 35% 50%,rgba(99,102,241,.03) 0%,transparent 70%),radial-gradient(ellipse 160px 160px at 65% 50%,rgba(217,119,6,.05) 0%,transparent 70%),radial-gradient(ellipse 240px 240px at 65% 50%,rgba(217,119,6,.02) 0%,transparent 70%);pointer-events:none}
+.hero-eyebrow{font-family:'Noto Sans SC',sans-serif;font-weight:300;font-size:14px;letter-spacing:6px;text-transform:uppercase;color:var(--gold-light);opacity:0;animation:fadeUp 1s .3s forwards;margin-bottom:32px;position:relative;z-index:1}
+.hero h1{font-family:'Noto Serif SC',serif;font-weight:900;font-size:clamp(38px,7vw,72px);color:#f0eef4;line-height:1.2;opacity:0;animation:fadeUp 1s .6s forwards;position:relative;z-index:1}
+.hero h1 span{display:block;background:linear-gradient(135deg,var(--accent-light),var(--gold-light));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.hero-subtitle{font-family:'Noto Sans SC',sans-serif;font-weight:300;font-size:clamp(16px,2.5vw,20px);color:rgba(240,238,244,.55);max-width:600px;margin-top:28px;line-height:1.8;opacity:0;animation:fadeUp 1s .9s forwards;position:relative;z-index:1}
+.hero-scroll{position:absolute;bottom:40px;opacity:0;animation:fadeUp 1s 1.2s forwards;z-index:1}
+.hero-scroll span{display:block;width:1px;height:48px;background:linear-gradient(to bottom,var(--gold-light),transparent);margin:0 auto;animation:pulse 2s infinite}
+@keyframes fadeUp{from{opacity:0;transform:translateY(24px)}to{opacity:1;transform:translateY(0)}}
+@keyframes pulse{0%,100%{opacity:.3}50%{opacity:1}}
+.content{max-width:720px;margin:0 auto;padding:80px 24px 120px}
+.chapter{margin-bottom:80px;opacity:0;transform:translateY(30px);transition:opacity .8s ease,transform .8s ease}.chapter.visible{opacity:1;transform:translateY(0)}
+.chapter-number{font-family:'Playfair Display',serif;font-size:13px;font-weight:700;letter-spacing:3px;color:var(--accent);text-transform:uppercase;margin-bottom:8px}
+.chapter h2{font-family:'Noto Serif SC',serif;font-weight:700;font-size:clamp(26px,4vw,34px);line-height:1.4;color:var(--ink);margin-bottom:32px}
+.chapter h2::after{content:'';display:block;width:48px;height:3px;background:linear-gradient(to right,var(--accent),var(--gold));margin-top:16px;border-radius:2px}
+.chapter p{margin-bottom:20px;color:#2d2a26}
+.insight-box{background:linear-gradient(135deg,rgba(49,46,129,.08),rgba(49,46,129,.02));border-left:3px solid var(--accent);padding:24px 28px;margin:32px 0;border-radius:0 8px 8px 0;font-family:'Noto Serif SC',serif;font-size:18px;line-height:1.9;color:#1e1a38}
+.scene-box{background:#fff;border:1px solid var(--divider);border-radius:12px;padding:28px 32px;margin:32px 0;position:relative;box-shadow:0 2px 16px rgba(0,0,0,.04)}
+.scene-box::before{content:'🐕';position:absolute;top:-16px;left:24px;font-size:28px;background:var(--paper);padding:0 8px}
+.scene-box.cloud::before{content:'☁️'}
+.scene-box.robot::before{content:'🤖'}
+.scene-box.walk::before{content:'🚶'}
+.scene-box.think::before{content:'💡'}
+.scene-box.lens::before{content:'🔭'}
+.scene-box h3{font-family:'Noto Serif SC',serif;font-weight:600;font-size:18px;color:var(--accent);margin-bottom:12px}
+.key-point{background:var(--highlight);padding:3px 8px;border-radius:3px;font-weight:500}
+.chain{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin:24px 0;font-size:15px;font-weight:500;color:var(--muted)}
+.chain .node{background:#fff;border:1px solid var(--divider);padding:6px 14px;border-radius:20px;color:var(--ink);font-size:14px}
+.chain .arrow{color:var(--accent);font-weight:700;font-size:16px}
+.math{font-family:'Playfair Display','Georgia',serif;font-style:italic;color:var(--accent);font-weight:700}
+.section-divider{text-align:center;margin:64px 0;color:var(--divider);font-size:20px;letter-spacing:12px}
+.finale{background:linear-gradient(160deg,#08061a,#141038,#08061a);color:var(--paper);padding:80px 24px;margin-top:40px}
+.finale-inner{max-width:720px;margin:0 auto}
+.finale h2{font-family:'Noto Serif SC',serif;font-weight:900;font-size:clamp(28px,5vw,38px);background:linear-gradient(135deg,var(--accent-light),var(--gold-light));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;margin-bottom:36px;line-height:1.4}
+.finale p{color:rgba(240,238,244,.8);margin-bottom:20px;line-height:2}
+.finale .insight-box{background:rgba(99,102,241,.08);border-left-color:var(--accent-light);color:rgba(240,238,244,.9)}
+.finale-rules{list-style:none;padding:0;margin:32px 0}
+.finale-rules li{padding:16px 0;border-bottom:1px solid rgba(240,238,244,.1);color:rgba(240,238,244,.85);line-height:1.9;display:flex;gap:12px}
+.finale-rules li .num{font-family:'Playfair Display',serif;font-weight:700;color:var(--gold-light);font-size:20px;flex-shrink:0;width:28px}
+.colophon{text-align:center;padding:40px 24px;color:var(--muted);font-size:13px;letter-spacing:2px}
+.toc{position:fixed;right:24px;top:50%;transform:translateY(-50%);z-index:100;display:flex;flex-direction:column;gap:12px}
+.toc a{display:block;width:8px;height:8px;border-radius:50%;background:var(--divider);transition:all .3s;position:relative;text-decoration:none}
+.toc a.active{background:var(--accent-light);transform:scale(1.4)}
+.toc a::after{content:attr(data-label);position:absolute;right:20px;top:50%;transform:translateY(-50%);white-space:nowrap;font-size:12px;color:var(--muted);opacity:0;transition:opacity .3s;pointer-events:none;font-family:'Noto Sans SC',sans-serif}
+.toc a:hover::after{opacity:1}
+@media(max-width:900px){.toc{display:none}}
+@media(max-width:600px){.content{padding:48px 20px 80px}.scene-box{padding:20px}.insight-box{padding:20px 22px}body{font-size:16px}}
+</style>
+</head>
+<body>
+<nav class="toc" id="toc"><a href="#ch1" data-label="贝叶斯的灵魂"></a><a href="#ch2" data-label="半夜的狗叫"></a><a href="#ch3" data-label="参数是分布"></a><a href="#ch4" data-label="MCMC算法"></a><a href="#ch5" data-label="本质总结"></a></nav>
+
+<header class="hero">
+<div class="hero-eyebrow">A First-Principles Exploration</div>
+<h1>贝叶斯统计的本质<span>偏见 · 证据 · 信念进化</span></h1>
+<p class="hero-subtitle">一场从福尔摩斯的看门狗出发，推演到先验分布、后验更新与 MCMC 算法底层哲学的思维旅程。<br>没有测度论证明，只有信念迭代的直觉。</p>
+<div class="hero-scroll"><span></span></div>
+</header>
+
+<main class="content">
+
+<section class="chapter" id="ch1">
+<div class="chapter-number">Chapter I</div>
+<h2>贝叶斯的灵魂：科学不是抛弃偏见——是带着偏见出发，用证据修正它</h2>
+
+<p>传统统计学（频率派）有一个高冷的信条：分析必须"客观"。你的个人信念、先前的经验、直觉——统统不该出现在统计推断中。只有数据说话。</p>
+
+<p>贝叶斯统计做了一件大胆到近乎叛逆的事——</p>
+
+<p><strong>它公然邀请"主观信念"走进了数学的殿堂。</strong></p>
+
+<div class="insight-box">
+贝叶斯统计的本质，用一句话说：<br><br>
+<strong>先验（你出发前相信什么）+ 数据（你看到了什么证据）= 后验（你现在应该相信什么）</strong><br><br>
+它不假装你对世界一无所知。它承认你有偏见——然后用数学精确地规定：<strong>面对新证据时，你的偏见应该以什么速度、什么方向被修正。</strong><br><br>
+传统统计学问："这个数据在零假设下有多反常？"（P值）<br>
+贝叶斯统计问："<strong>看完这个数据之后，我对世界的信念应该更新成什么样？</strong>"<br><br>
+前者关心"数据有多极端"。后者关心"我的信念应该怎么变"。这是两种完全不同的认识论。
+</div>
+
+<p>这种"带着偏见出发、用证据修正"的思维方式，其实是人类大脑每时每刻都在做的事情。你走进一家从没去过的餐厅，你有一个"先验"——基于它的装修、评分、菜单价格，你大概猜它好不好吃。吃了第一口菜——新证据到来了。你的信念更新了。吃完整顿饭——你的信念进一步收敛。</p>
+
+<p><span class="key-point">贝叶斯统计不是一种计算方法——它是一种认知操作系统。</span></p>
+
+<div class="chain">
+<span class="node">先验：你的初始信念</span>
+<span class="arrow">×</span>
+<span class="node">似然：数据的说服力</span>
+<span class="arrow">→</span>
+<span class="node">后验：更新后的信念</span>
+<span class="arrow">→</span>
+<span class="node">新数据到来 → 后验变成下一轮先验</span>
+</div>
+</section>
+
+<div class="section-divider">· · ·</div>
+
+<section class="chapter" id="ch2">
+<div class="chapter-number">Chapter II</div>
+<h2>原始模型：半夜的狗叫——福尔摩斯的贝叶斯大脑</h2>
+
+<div class="scene-box">
+<h3>场景设定：银色马案件中沉默的看门狗</h3>
+<p>柯南·道尔的小说中，一匹名贵赛马在夜间被盗。福尔摩斯注意到了一个所有人都忽略的线索——<strong>看门狗在夜里没有叫</strong>。</p>
+<p>别人觉得这无关紧要。但福尔摩斯从中推断出：<strong>偷马的人是狗认识的人——是家贼。</strong></p>
+<p>让我们用贝叶斯的框架来拆解他的推理。</p>
+</div>
+
+<p><strong>第一步：先验——在看到证据之前，你怎么想？</strong></p>
+
+<p>马被盗了。嫌疑人可能是外人（比如70%的概率），也可能是家贼（比如30%的概率）。这是你基于常识的初始判断。</p>
+
+<p><strong>第二步：似然——在不同假设下，这个证据有多可能出现？</strong></p>
+
+<p>如果是外人偷的：狗不叫的概率很低——比如5%。陌生人来了狗会疯叫。</p>
+
+<p>如果是家贼偷的：狗不叫的概率很高——比如90%。狗认识他，不会叫。</p>
+
+<p><strong>第三步：后验——看完证据后，信念怎么更新？</strong></p>
+
+<div class="scene-box think">
+<h3>贝叶斯更新的计算</h3>
+<p>外人且狗不叫的"联合可能性" = 70% × 5% = 3.5%</p>
+<p>家贼且狗不叫的"联合可能性" = 30% × 90% = 27%</p>
+<p>狗不叫的总概率 = 3.5% + 27% = 30.5%</p>
+<p><strong>后验概率：</strong></p>
+<p>P(家贼 | 狗没叫) = 27% / 30.5% ≈ <strong>88.5%</strong></p>
+<p>P(外人 | 狗没叫) = 3.5% / 30.5% ≈ <strong>11.5%</strong></p>
+<p>原来你觉得家贼的概率只有30%。但"狗没叫"这个证据一出现，家贼的概率飙升到了88.5%。</p>
+<p><strong>一条证据，把嫌疑人的排序彻底翻转了。</strong></p>
+</div>
+
+<div class="insight-box">
+贝叶斯更新的精髓在于：<strong>证据的"说服力"不取决于它本身多惊人，而取决于它在不同假设下出现的概率差异有多大。</strong><br><br>
+"狗没叫"这件事本身不惊人——也许狗睡着了。但关键是：如果是外人来的，狗没叫的概率极低；如果是家贼来的，狗没叫几乎是必然的。<strong>正是这个"概率差"构成了证据的说服力。</strong><br><br>
+一条证据如果在所有假设下出现的概率都一样——那它什么信息也不包含。一条证据越是"只在某个假设下才说得通"——它的说服力就越强。
+</div>
+
+<div class="chain">
+<span class="node">先验：家贼 30%</span>
+<span class="arrow">→</span>
+<span class="node">证据：狗没叫</span>
+<span class="arrow">→</span>
+<span class="node">似然比极端偏向家贼</span>
+<span class="arrow">→</span>
+<span class="node">后验：家贼 88.5%</span>
+</div>
+</section>
+
+<div class="section-divider">· · ·</div>
+
+<section class="chapter" id="ch3">
+<div class="chapter-number">Chapter III</div>
+<h2>参数不是数字——它是一片概率云</h2>
+
+<p>传统统计学怎么看待"硬币朝上的概率 <span class="math">p</span>"？它认为 <span class="math">p</span> 是一个<strong>固定的、确定的数字</strong>——比如0.5。它就在那里，只是你不知道是多少。你的任务是用数据去"估计"它。最大似然估计给你一个点估计，置信区间给你一个范围。但 <span class="math">p</span> 本身不是随机的。</p>
+
+<p>贝叶斯统计的看法截然不同——</p>
+
+<div class="scene-box cloud">
+<h3>参数是一片"概率云"</h3>
+<p>贝叶斯派说：<span class="math">p</span> <strong>本身</strong>也是不确定的。在你抛硬币之前，你对 <span class="math">p</span> 有一个信念——也许你觉得它大概在0.4到0.6之间，0.5最可能。这个信念可以用一个<strong>概率分布</strong>来表达——叫做<strong>先验分布</strong>。</p>
+<p>然后你抛了100次硬币，出现了62次正面。新数据到来了。</p>
+<p>贝叶斯更新后，你对 <span class="math">p</span> 的信念变了——那片概率云收缩了、移动了。它现在集中在0.55到0.65附近，中心大约在0.6。这个更新后的分布叫<strong>后验分布</strong>。</p>
+<p><strong>先验分布是一片宽大模糊的云。数据到来后，云变得更窄更集中——你的不确定性减少了。</strong></p>
+</div>
+
+<div class="insight-box">
+这就是贝叶斯派和频率派的核心分歧：<br><br>
+频率派：参数是固定的数。不确定性来自数据的随机性。<br>
+贝叶斯派：<strong>参数本身就是不确定的。不确定性来自你对世界的有限认知。</strong><br><br>
+贝叶斯派的后验分布直接告诉你"参数落在某个区间的概率是多少"——这恰恰是频率派的置信区间<strong>不能</strong>说的话。（频率派的95%置信区间的正确解读是"如果我重复做实验无穷多次，95%的置信区间会包含真值"——它不是在说"真值有95%的概率在这个区间里"。）<br><br>
+<strong>贝叶斯方法在数据稀缺时特别强大。</strong>因为先验分布让你能把"已有的领域知识"注入模型。只有3个数据点？频率派的估计会非常不稳定。但如果你有强烈的先验知识（比如物理定律告诉你参数必须在某个范围内），贝叶斯方法可以用先验来"稳住"估计，避免被少量数据带偏。<br><br>
+数据越少，先验的影响越大。数据越多，先验被数据"淹没"，后验几乎完全由数据决定。<strong>最终，当数据无穷多时，贝叶斯和频率派殊途同归。</strong>
+</div>
+
+<div class="chain">
+<span class="node">先验分布：宽大模糊的信念</span>
+<span class="arrow">→</span>
+<span class="node">数据到来</span>
+<span class="arrow">→</span>
+<span class="node">后验分布：收窄精确的信念</span>
+<span class="arrow">→</span>
+<span class="node">数据越多，云越窄</span>
+</div>
+</section>
+
+<div class="section-divider">· · ·</div>
+
+<section class="chapter" id="ch4">
+<div class="chapter-number">Chapter IV</div>
+<h2>MCMC：当后验分布太复杂，就派一个机器人去暴力探索</h2>
+
+<p>贝叶斯统计有一个美丽的理论框架，但它有一个致命的工程难题——</p>
+
+<p><strong>后验分布的计算需要做积分。而在高维空间中，这个积分几乎不可能精确计算。</strong></p>
+
+<p>如果你的模型只有一两个参数，积分也许还能手算。但现实中的模型可能有几十上百个参数——对应的后验分布是一个几十维空间中的复杂曲面。在这种空间中做积分？从数学上说，基本无解。</p>
+
+<p>这就是为什么贝叶斯统计被发明后停滞了两百多年——理论很美，但算不出来。</p>
+
+<p>直到20世纪后半叶，计算机的出现带来了一个天才的暴力解法——</p>
+
+<div class="scene-box walk">
+<h3>MCMC：一个在概率山脉上随机漫步的机器人</h3>
+<p>想象后验分布是一片高维的"概率山脉"——山越高的地方，参数值越可能。你不知道这座山长什么样（算不出来），但你可以派一个机器人去"走"。</p>
+<p>机器人的规则很简单：</p>
+<p>① 它站在当前位置，随机提议一个新位置。</p>
+<p>② 如果新位置比当前位置"更高"（概率更大），就一定走过去。</p>
+<p>③ 如果新位置比当前位置"更低"，也有一定概率走过去（概率与高度差相关——差得越多越不愿意走）。</p>
+<p>④ 重复几百万次。</p>
+<p>神奇的是：<strong>经过足够长时间的游走后，机器人踩过的所有点的分布，精确地收敛于后验分布。</strong></p>
+<p>山峰（高概率区域）被踩得最多。低谷（低概率区域）偶尔经过但很少停留。最终，你不需要知道这座山的数学公式——你只需要数"机器人在每个区域停留了多久"，就得到了后验分布的精确近似。</p>
+</div>
+
+<div class="insight-box">
+MCMC 的哲学：<strong>你算不出宇宙的全貌，但你可以让一个"足够聪明的醉汉"在宇宙中随机游走足够久，用他的足迹勾勒出真理的轮廓。</strong><br><br>
+这就是蒙特卡洛方法的精髓——用随机采样来逼近确定性的答案。你不需要解析解——你只需要能在任意一个点计算后验的"高度"（哪怕是非标准化的），然后让随机游走替你完成积分。<br><br>
+MCMC 的发明彻底解放了贝叶斯统计。从此，任何复杂度的贝叶斯模型都变得可计算。这引发了统计学的一场革命——从20世纪90年代开始，贝叶斯方法从理论象牙塔走进了药物试验、气候建模、自然语言处理、推荐系统……几乎所有需要"从不确定中推断"的领域。
+</div>
+
+<div class="chain">
+<span class="node">后验分布太复杂（高维积分）</span>
+<span class="arrow">→</span>
+<span class="node">精确计算不可能</span>
+<span class="arrow">→</span>
+<span class="node">MCMC：机器人随机漫步采样</span>
+<span class="arrow">→</span>
+<span class="node">足迹分布 ≈ 后验分布</span>
+<span class="arrow">→</span>
+<span class="node">贝叶斯统计被解放</span>
+</div>
+</section>
+
+<div class="section-divider">· · ·</div>
+</main>
+
+<section class="finale" id="ch5">
+<div class="finale-inner">
+<div class="chapter-number" style="color:var(--gold-light)">Chapter V</div>
+<h2>本质总结：建立你的贝叶斯认知操作系统</h2>
+
+<p>让我们串一遍。贝叶斯统计的灵魂是"先验 + 证据 = 后验"——带着偏见出发，用数据不断修正。福尔摩斯用贝叶斯大脑从"狗没叫"中推翻了嫌疑人排序。贝叶斯派把参数本身视为不确定的"概率云"，让先验知识在数据稀缺时发挥稳定作用。而 MCMC 用随机漫步的暴力采样，解决了高维后验分布的计算难题，让这套理论终于可以落地。</p>
+
+<ul class="finale-rules">
+<li><span class="num">1</span><span><strong>极端的偏见需要极端的证据才能被推翻。</strong> 如果你的先验信念非常强（比如你坚信硬币是公平的，先验高度集中在0.5），那么少量的数据几乎不会改变你的后验。你需要大量的、压倒性的证据才能让后验显著偏离先验。这在认知上意味着：<strong>一个深信不疑的人不会被一两个反例说服——但这不一定是"固执"，如果他的先验有充分的理由。</strong>关键是：你的先验强度是否和你掌握的先前证据量匹配？</span></li>
+<li><span class="num">2</span><span><strong>没有数据的先验也是信息——"无知"也可以被量化。</strong> 如果你对某个参数完全没有任何先前知识，你可以用一个"扁平"的先验——所有值一视同仁。这不是在回避问题——这恰恰是在数学上精确地编码了"我什么都不知道"。贝叶斯框架的优美在于：<strong>它能统一处理"非常确定""有点了解"和"完全无知"这些不同层级的知识状态。</strong></span></li>
+<li><span class="num">3</span><span><strong>永远不要给出100%确定的结论。</strong> 在贝叶斯框架中，如果你把某个假设的先验概率设为0（"绝对不可能"），那么无论多少证据都无法让它的后验变为正——因为0乘以任何数还是0。这意味着：<strong>一旦你"关闭"了一个可能性（赋予它零概率），你就永远无法被说服打开它。</strong>这是认知上最危险的状态。保持一丝怀疑，保留一线可能——哪怕极小——是贝叶斯的第一戒律。</span></li>
+<li><span class="num">4</span><span><strong>贝叶斯方法不是"更主观"——它是"把主观性摆到台面上来"。</strong> 频率派也有隐含的主观选择——选择什么模型、选择什么显著性水平、选择什么检验方法——这些都是研究者的主观判断。区别是频率派把这些选择藏在了"方法论"里，而贝叶斯把它们明确写成了先验分布。<strong>哪种做法更"科学"？把假设藏起来假装客观，还是把假设写出来让所有人看到并质疑？</strong></span></li>
+<li><span class="num">5</span><span><strong>贝叶斯思维是一种生活方式：永远在更新，永不"完成"。</strong> 后验永远是暂时的——它是"基于目前所有证据的最优信念"。明天可能有新证据到来，后验就会再次更新。一个贝叶斯思考者永远不会说"我已经找到了最终答案"。他只会说"基于目前的证据，我最相信的是X，但我随时准备被新证据说服改变"。<strong>这种持续迭代、永不封闭、对新证据永远保持开放的心态——就是贝叶斯思维赋予你的最深刻的认知习惯。</strong></span></li>
+</ul>
+
+<div class="insight-box" style="margin-top:48px">
+贝叶斯统计的终极启示是：<strong>确定性是一种幻觉。我们能做到的最好的事情，不是消除不确定性，而是精确地管理它。</strong><br><br>
+带着偏见出发不可耻——可耻的是面对证据时拒绝更新。<br>
+承认无知不是软弱——它是让学习成为可能的前提条件。<br><br>
+<strong>贝叶斯思维不是一种统计技巧。它是一种认知操作系统——一种永远在进化、永远不完美、但永远在变得更好的思维方式。</strong>
+</div>
+</div>
+</section>
+
+<div class="colophon">— FIN —</div>
+
+<script>
+const chapters=document.querySelectorAll('.chapter'),tocLinks=document.querySelectorAll('.toc a');
+const observer=new IntersectionObserver(e=>{e.forEach(e=>{e.isIntersecting&&e.target.classList.add('visible')})},{threshold:.15});
+chapters.forEach(c=>observer.observe(c));
+const sections=document.querySelectorAll('.chapter,.finale');
+window.addEventListener('scroll',()=>{let c='';sections.forEach(s=>{window.scrollY>=s.offsetTop-200&&(c=s.id)});tocLinks.forEach(l=>{l.classList.toggle('active',l.getAttribute('href')==='#'+c)})});
+</script>
+</body>
+</html>

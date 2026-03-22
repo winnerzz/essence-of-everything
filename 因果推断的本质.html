@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>因果推断的本质 — 一场关于平行宇宙、干预与寻找真相的推演</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;600;700;900&family=Noto+Sans+SC:wght@300;400;500;700&family=Playfair+Display:ital,wght@0,700;1,700&display=swap" rel="stylesheet">
+<style>
+:root{--ink:#1a1a1a;--paper:#f4f0f0;--paper-deep:#e6dede;--accent:#881337;--accent-light:#e11d48;--gold:#1e3a5f;--gold-light:#2563eb;--teal:#4a1d6a;--muted:#6b5a5a;--divider:#c8b4b4;--highlight:#fff1f2}
+*{margin:0;padding:0;box-sizing:border-box}html{scroll-behavior:smooth}
+body{background:var(--paper);color:var(--ink);font-family:'Noto Sans SC',sans-serif;font-weight:400;line-height:2;font-size:17px;-webkit-font-smoothing:antialiased}
+.hero{min-height:100vh;display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center;padding:60px 24px;position:relative;overflow:hidden;background:linear-gradient(160deg,#0a0408 0%,#1f0a14 35%,#0a0f1a 65%,#0a0408 100%)}
+.hero::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse 500px 350px at 35% 40%,rgba(225,29,72,.09) 0%,transparent 70%),radial-gradient(ellipse 400px 400px at 65% 60%,rgba(37,99,235,.06) 0%,transparent 70%);pointer-events:none}
+.hero::after{content:'';position:absolute;width:400px;height:1px;top:50%;left:50%;transform:translate(-50%,-50%);background:linear-gradient(90deg,transparent,rgba(225,29,72,.15),transparent);pointer-events:none;box-shadow:0 -40px 0 0 rgba(225,29,72,.03),0 40px 0 0 rgba(37,99,235,.03)}
+.hero-eyebrow{font-family:'Noto Sans SC',sans-serif;font-weight:300;font-size:14px;letter-spacing:6px;text-transform:uppercase;color:var(--accent-light);opacity:0;animation:fadeUp 1s .3s forwards;margin-bottom:32px;position:relative;z-index:1}
+.hero h1{font-family:'Noto Serif SC',serif;font-weight:900;font-size:clamp(38px,7vw,72px);color:#f4f0f0;line-height:1.2;opacity:0;animation:fadeUp 1s .6s forwards;position:relative;z-index:1}
+.hero h1 span{display:block;background:linear-gradient(135deg,var(--accent-light),var(--gold-light));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.hero-subtitle{font-family:'Noto Sans SC',sans-serif;font-weight:300;font-size:clamp(16px,2.5vw,20px);color:rgba(244,240,240,.55);max-width:600px;margin-top:28px;line-height:1.8;opacity:0;animation:fadeUp 1s .9s forwards;position:relative;z-index:1}
+.hero-scroll{position:absolute;bottom:40px;opacity:0;animation:fadeUp 1s 1.2s forwards;z-index:1}
+.hero-scroll span{display:block;width:1px;height:48px;background:linear-gradient(to bottom,var(--accent-light),transparent);margin:0 auto;animation:pulse 2s infinite}
+@keyframes fadeUp{from{opacity:0;transform:translateY(24px)}to{opacity:1;transform:translateY(0)}}
+@keyframes pulse{0%,100%{opacity:.3}50%{opacity:1}}
+.content{max-width:720px;margin:0 auto;padding:80px 24px 120px}
+.chapter{margin-bottom:80px;opacity:0;transform:translateY(30px);transition:opacity .8s ease,transform .8s ease}.chapter.visible{opacity:1;transform:translateY(0)}
+.chapter-number{font-family:'Playfair Display',serif;font-size:13px;font-weight:700;letter-spacing:3px;color:var(--accent);text-transform:uppercase;margin-bottom:8px}
+.chapter h2{font-family:'Noto Serif SC',serif;font-weight:700;font-size:clamp(26px,4vw,34px);line-height:1.4;color:var(--ink);margin-bottom:32px}
+.chapter h2::after{content:'';display:block;width:48px;height:3px;background:linear-gradient(to right,var(--accent),var(--gold));margin-top:16px;border-radius:2px}
+.chapter p{margin-bottom:20px;color:#2d2a26}
+.insight-box{background:linear-gradient(135deg,rgba(136,19,55,.08),rgba(136,19,55,.02));border-left:3px solid var(--accent);padding:24px 28px;margin:32px 0;border-radius:0 8px 8px 0;font-family:'Noto Serif SC',serif;font-size:18px;line-height:1.9;color:#3a1a22}
+.scene-box{background:#fff;border:1px solid var(--divider);border-radius:12px;padding:28px 32px;margin:32px 0;position:relative;box-shadow:0 2px 16px rgba(0,0,0,.04)}
+.scene-box::before{content:'🐓';position:absolute;top:-16px;left:24px;font-size:28px;background:var(--paper);padding:0 8px}
+.scene-box.pill::before{content:'💊'}
+.scene-box.coin::before{content:'🪙'}
+.scene-box.mirror::before{content:'🪞'}
+.scene-box.ghost::before{content:'👻'}
+.scene-box.think::before{content:'💡'}
+.scene-box h3{font-family:'Noto Serif SC',serif;font-weight:600;font-size:18px;color:var(--accent);margin-bottom:12px}
+.key-point{background:var(--highlight);padding:3px 8px;border-radius:3px;font-weight:500}
+.chain{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin:24px 0;font-size:15px;font-weight:500;color:var(--muted)}
+.chain .node{background:#fff;border:1px solid var(--divider);padding:6px 14px;border-radius:20px;color:var(--ink);font-size:14px}
+.chain .arrow{color:var(--accent);font-weight:700;font-size:16px}
+.section-divider{text-align:center;margin:64px 0;color:var(--divider);font-size:20px;letter-spacing:12px}
+.finale{background:linear-gradient(160deg,#0a0408,#1f0a14,#0a0408);color:var(--paper);padding:80px 24px;margin-top:40px}
+.finale-inner{max-width:720px;margin:0 auto}
+.finale h2{font-family:'Noto Serif SC',serif;font-weight:900;font-size:clamp(28px,5vw,38px);background:linear-gradient(135deg,var(--accent-light),var(--gold-light));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;margin-bottom:36px;line-height:1.4}
+.finale p{color:rgba(244,240,240,.8);margin-bottom:20px;line-height:2}
+.finale .insight-box{background:rgba(225,29,72,.08);border-left-color:var(--accent-light);color:rgba(244,240,240,.9)}
+.finale-rules{list-style:none;padding:0;margin:32px 0}
+.finale-rules li{padding:16px 0;border-bottom:1px solid rgba(244,240,240,.1);color:rgba(244,240,240,.85);line-height:1.9;display:flex;gap:12px}
+.finale-rules li .num{font-family:'Playfair Display',serif;font-weight:700;color:var(--accent-light);font-size:20px;flex-shrink:0;width:28px}
+.colophon{text-align:center;padding:40px 24px;color:var(--muted);font-size:13px;letter-spacing:2px}
+.toc{position:fixed;right:24px;top:50%;transform:translateY(-50%);z-index:100;display:flex;flex-direction:column;gap:12px}
+.toc a{display:block;width:8px;height:8px;border-radius:50%;background:var(--divider);transition:all .3s;position:relative;text-decoration:none}
+.toc a.active{background:var(--accent-light);transform:scale(1.4)}
+.toc a::after{content:attr(data-label);position:absolute;right:20px;top:50%;transform:translateY(-50%);white-space:nowrap;font-size:12px;color:var(--muted);opacity:0;transition:opacity .3s;pointer-events:none;font-family:'Noto Sans SC',sans-serif}
+.toc a:hover::after{opacity:1}
+@media(max-width:900px){.toc{display:none}}
+@media(max-width:600px){.content{padding:48px 20px 80px}.scene-box{padding:20px}.insight-box{padding:20px 22px}body{font-size:16px}}
+</style>
+</head>
+<body>
+<nav class="toc" id="toc"><a href="#ch1" data-label="因果的灵魂"></a><a href="#ch2" data-label="辛普森悖论"></a><a href="#ch3" data-label="随机对照试验"></a><a href="#ch4" data-label="反事实推断"></a><a href="#ch5" data-label="本质总结"></a></nav>
+
+<header class="hero">
+<div class="hero-eyebrow">A First-Principles Exploration</div>
+<h1>因果推断的本质<span>平行宇宙 · 干预 · 真相</span></h1>
+<p class="hero-subtitle">一场从公鸡打鸣和太阳升起的关系出发，推演到随机试验、反事实思维与现代因果革命底层逻辑的思维旅程。<br>没有术语堆砌，只有追问真相的直觉。</p>
+<div class="hero-scroll"><span></span></div>
+</header>
+
+<main class="content">
+
+<section class="chapter" id="ch1">
+<div class="chapter-number">Chapter I</div>
+<h2>因果的灵魂："看到"和"做到"是两个宇宙</h2>
+
+<p>公鸡每天在太阳升起之前打鸣。你观察了一千天，次次如此。打鸣和日出之间的相关性接近100%。</p>
+
+<p>公鸡把太阳叫起来了吗？</p>
+
+<p>当然没有。把世界上所有的公鸡杀光，太阳照样升起。这是一个荒谬到你不需要任何统计学知识就知道的例子。但<strong>同样的逻辑错误，换一个不那么荒谬的场景，你就很可能犯</strong>——</p>
+
+<p>"喝红酒的人心脏病发病率更低" → 红酒预防心脏病？（也许只是因为喝得起好红酒的人整体生活水平更高。）</p>
+
+<p>"读大学的人终身收入更高" → 大学教育导致高收入？（也许本来就是能力更强的人才会去读大学。）</p>
+
+<div class="insight-box">
+因果推断的本质，用一句话说：<br><br>
+<strong>"看到X和Y一起出现"（观察/相关）和"X导致了Y"（干预/因果）是两个完全不同维度的断言。</strong><br><br>
+珀尔用一个精辟的区分来表达这一点：<br>
+<strong>P(Y | X)</strong> = "在看到X发生的人群中，Y发生的概率"——这是观察。<br>
+<strong>P(Y | do(X))</strong> = "如果我主动让X发生，Y发生的概率"——这是干预。<br><br>
+两者可以截然不同。吸烟者中肺癌比例高（观察）。如果你<strong>强制</strong>一个人吸烟，他得肺癌的概率是否更高？（干预）——只有回答了第二个问题，你才触摸到了因果。
+</div>
+
+<p>为什么观察和干预会给出不同的答案？因为有一个隐藏在暗处的幽灵——</p>
+
+<div class="chain">
+<span class="node">观察到X和Y同时出现</span>
+<span class="arrow">≠</span>
+<span class="node">X导致了Y</span>
+<span class="arrow">→</span>
+<span class="node">可能存在"混淆变量"在暗中操控两者</span>
+</div>
+</section>
+
+<div class="section-divider">· · ·</div>
+
+<section class="chapter" id="ch2">
+<div class="chapter-number">Chapter II</div>
+<h2>辛普森悖论：当数据公然说谎</h2>
+
+<div class="scene-box pill">
+<h3>场景设定：一种新药的离奇审判</h3>
+<p>某制药公司开发了一种新药。临床试验数据如下：</p>
+<p><strong>在男性患者中：</strong>吃药组治愈率60%，不吃药组治愈率50%。药有效。</p>
+<p><strong>在女性患者中：</strong>吃药组治愈率40%，不吃药组治愈率30%。药也有效。</p>
+<p><strong>但把男女合并在一起看总体：</strong>吃药组治愈率45%，不吃药组治愈率48%。<strong>药反而无效了！</strong></p>
+<p>在每个子群体中都有效的药，合并看总体居然无效？这不是数学错误——这是真实可能发生的。</p>
+</div>
+
+<p>怎么回事？</p>
+
+<p>关键在于：男性和女性的<strong>基础治愈率不同</strong>（男性病轻更容易好，女性病重更难好），而且<strong>分组不均</strong>——大部分女性被分到了吃药组，大部分男性被分到了不吃药组。</p>
+
+<p>合并数据时，吃药组里女性占多数（基础治愈率低），不吃药组里男性占多数（基础治愈率高）。所以合并后，吃药组看起来"更差"——但这不是药的问题，而是性别分布的问题。</p>
+
+<p><span class="key-point">性别就是那个"混淆变量"——它同时影响了"是否吃药"和"是否治愈"，让你在合并数据中看到了一个虚假的结论。</span></p>
+
+<div class="scene-box ghost">
+<h3>混淆变量：暗处的幽灵</h3>
+<p>混淆变量是因果推断中最危险的敌人。它是一个你可能没注意到的第三方变量，同时影响了"原因"和"结果"，制造出一种虚假的因果假象。</p>
+<p>冰淇淋销量和溺水率正相关——混淆变量是"夏天"。</p>
+<p>消防员数量和火灾损失正相关——混淆变量是"火灾规模"（大火才派更多消防员）。</p>
+<p><strong>只要存在未被控制的混淆变量，任何观察到的相关性都可能是假象。</strong></p>
+</div>
+
+<div class="insight-box">
+辛普森悖论的教训：<strong>数据不会自动告诉你真相。同样的数据，按不同方式切分，可以讲出相反的故事。</strong><br><br>
+你必须带着因果模型——对"什么导致什么"的假设——才能正确地解读数据。没有假设的数据分析，就像没有地图的航行。<br><br>
+那么问题是：<strong>怎么才能消灭混淆变量的影响？</strong>
+</div>
+
+<div class="chain">
+<span class="node">子群体中药有效</span>
+<span class="arrow">→</span>
+<span class="node">合并后药无效</span>
+<span class="arrow">→</span>
+<span class="node">原因：混淆变量（性别）扭曲了分组</span>
+<span class="arrow">→</span>
+<span class="node">教训：合并数据前必须检查混淆</span>
+</div>
+</section>
+
+<div class="section-divider">· · ·</div>
+
+<section class="chapter" id="ch3">
+<div class="chapter-number">Chapter III</div>
+<h2>上帝的解药：随机对照试验——抛硬币如何逼出真相</h2>
+
+<p>人类对抗混淆变量最强大的武器，不是更复杂的统计模型，而是一个朴素到令人难以置信的动作——</p>
+
+<p><strong>抛硬币。</strong></p>
+
+<div class="scene-box coin">
+<h3>随机对照试验（RCT）：极简的完美设计</h3>
+<p>你有1000个病人。你<strong>抛硬币</strong>决定每个人吃药还是不吃药。硬币不看你的性别、年龄、病情轻重、基因——它完全无视一切。纯随机。</p>
+<p>抛完之后，你大约有500人吃药、500人不吃药。因为是随机分的：</p>
+<p>两组中男女比例<strong>大致相同</strong>。</p>
+<p>两组中重症轻症比例<strong>大致相同</strong>。</p>
+<p>两组中高矮胖瘦比例<strong>大致相同</strong>。</p>
+<p>两组中你能想到的和你想不到的所有变量的分布<strong>大致相同</strong>。</p>
+<p><strong>随机化的威力在于：它同时切断了所有混淆变量的影响——包括你根本不知道其存在的那些。</strong></p>
+</div>
+
+<div class="insight-box">
+随机对照试验之所以被称为"因果推断的金标准"，是因为：<br><br>
+<strong>当两组之间唯一的系统性差异就是"吃不吃药"时，任何结果的差异都只能归因于药。</strong><br><br>
+不需要控制性别，不需要控制年龄，不需要控制任何东西——因为随机化已经"自动控制"了一切。这就是为什么一个简单的"抛硬币"比一百种复杂的统计调整更有力：它不需要你知道混淆变量是什么——它用概率的力量同时消灭了所有的混淆。<br><br>
+<strong>随机化不是在消除差异——它是在让差异"公平地"分布在两组之间，使得差异互相抵消。</strong>
+</div>
+
+<p>但现实世界中，很多因果问题无法做随机试验——你不能随机分配人去抽烟、不能随机分配国家去打仗、不能随机分配孩子去贫困家庭。怎么办？</p>
+
+<div class="chain">
+<span class="node">随机分组</span>
+<span class="arrow">→</span>
+<span class="node">两组仅在"干预"上不同</span>
+<span class="arrow">→</span>
+<span class="node">结果差异 = 因果效应</span>
+<span class="arrow">→</span>
+<span class="node">但很多情况下做不了随机试验…</span>
+</div>
+</section>
+
+<div class="section-divider">· · ·</div>
+
+<section class="chapter" id="ch4">
+<div class="chapter-number">Chapter IV</div>
+<h2>反事实：在数学空间里克隆一个平行宇宙</h2>
+
+<p>因果推断中最深刻的概念，来自一个看似科幻的问题——</p>
+
+<p><strong>"如果当初没有那样，现在会怎样？"</strong></p>
+
+<p>张三抽了30年烟，得了肺癌。抽烟导致了他的肺癌吗？要回答这个问题，你需要知道：<strong>如果张三当初没抽烟，他会不会得肺癌？</strong></p>
+
+<p>但那个"没抽烟的张三"不存在。他只活了一次，只走了一条路。那条没走的路，永远不可观测。</p>
+
+<div class="scene-box mirror">
+<h3>反事实：你无法活两次的根本困难</h3>
+<p>因果推断的根本困难叫做<strong>"因果推断的基本问题"</strong>：</p>
+<p>你只能观察到一个人在"接受干预"或"不接受干预"中的<strong>一种</strong>结果。另一种——反事实——永远缺失。</p>
+<p>你看到了抽烟的张三得了肺癌。但你看不到不抽烟的张三会怎样。</p>
+<p>个体层面的因果效应，在原则上是不可观测的。</p>
+<p><strong>因果推断的所有方法，本质上都是在想办法"猜测"那个你看不到的反事实。</strong></p>
+</div>
+
+<p>RCT 的天才在于：它不需要猜个体的反事实。它通过随机分组，让对照组的平均结果成为处理组"如果没吃药"的群体估计。</p>
+
+<p>当RCT做不了时，统计学家发明了一系列"从观测数据中逼近反事实"的工具——</p>
+
+<div class="scene-box think">
+<h3>没有随机试验时的因果武器库</h3>
+<p><strong>匹配法：</strong>在没吃药的人中，找一个和张三在所有可观测特征上都尽可能相似的人——他就是张三的"影子对照"。用他的结果作为张三反事实的近似。</p>
+<p><strong>工具变量法：</strong>找一个"巧妙的外力"——它影响了你是否吃药，但不直接影响你的健康结果。通过这个外力的自然变异来"模拟"随机分组。</p>
+<p><strong>断点回归：</strong>利用政策的"门槛效应"——比如高考分数线刚好过线和差一分的人，能力几乎相同但待遇截然不同。这些"门槛附近"的人构成了一个天然的近似随机试验。</p>
+<p><strong>双重差分：</strong>比较政策实施前后、受影响地区与不受影响地区的变化差异——用两次差分剥离掉时间趋势和地区差异。</p>
+<p><strong>所有这些方法的灵魂都是同一个：在无法做随机试验的现实中，用各种巧妙的设计来逼近"两组之间除了干预以外其他都一样"这个理想条件。</strong></p>
+</div>
+
+<div class="insight-box">
+反事实思维的终极教训：<strong>因果不是数据里"长"出来的——它是你带着假设"问"出来的。</strong><br><br>
+数据只能告诉你"相关"。要从相关走到因果，你必须做出关于数据生成过程的假设——什么影响了什么、什么不影响什么。这些假设不能从数据中自动验证——它们必须来自你对世界的理解。<br><br>
+珀尔的因果阶梯：<br>
+<strong>第一层：观察</strong>——看到什么就是什么。<br>
+<strong>第二层：干预</strong>——如果我做了X，会怎样？<br>
+<strong>第三层：反事实</strong>——如果当初没做X，会怎样？<br><br>
+<strong>大数据和机器学习停留在第一层。因果推断攀登到第二层和第三层。</strong>
+</div>
+
+<div class="chain">
+<span class="node">反事实：你看不到的那条路</span>
+<span class="arrow">→</span>
+<span class="node">RCT：用对照组估计反事实</span>
+<span class="arrow">→</span>
+<span class="node">做不了RCT：匹配/工具变量/断点/双重差分</span>
+<span class="arrow">→</span>
+<span class="node">所有方法都在逼近同一个理想</span>
+</div>
+</section>
+
+<div class="section-divider">· · ·</div>
+</main>
+
+<section class="finale" id="ch5">
+<div class="finale-inner">
+<div class="chapter-number" style="color:var(--accent-light)">Chapter V</div>
+<h2>本质总结：建立你的因果直觉</h2>
+
+<p>让我们串一遍。"看到"和"做到"是两个维度。混淆变量是潜伏在暗处的幽灵，能制造虚假的因果假象（辛普森悖论）。随机对照试验通过抛硬币同时消灭所有混淆。当RCT不可行时，反事实思维和各种准实验设计是逼近因果的替代武器。而因果永远不是从数据中"长出来"的——它是你带着假设"问出来"的。</p>
+
+<ul class="finale-rules">
+<li><span class="num">1</span><span><strong>相关不是因果——但这句话比你想的更深。</strong> 大多数人以为"相关不等于因果"只是说"冰淇淋不导致溺水"这种明显的例子。但在实践中，混淆变量可以伪装得极其隐蔽。一项大规模的观测研究发现"吃维生素补充剂的人更健康"——但吃补充剂的人本来就更关注健康、饮食更好、运动更多。是补充剂有效，还是健康意识有效？<strong>每当你看到"研究发现X与Y相关"，第一反应永远应该是：有什么我没想到的第三因素可能同时导致了X和Y？</strong></span></li>
+<li><span class="num">2</span><span><strong>没有假设就没有因果推断。</strong> 因果不是一种"更高级的统计方法"能从数据中自动提取的东西。它需要你对世界做出实质性的假设——什么变量影响什么、什么变量不影响什么。这些假设写成因果图（DAG），然后统计方法在这些假设下工作。<strong>假设错了，推断就错了——而数据本身无法告诉你假设对不对。</strong>这就是为什么领域知识永远比统计技巧更重要。</span></li>
+<li><span class="num">3</span><span><strong>很多"有效"只是自然自愈。</strong> 人生病时往往在最严重的时候去看医生、吃药。之后大多数人会好转——但这可能只是疾病的自然进程（均值回归），而非药物的功劳。这就是为什么需要对照组：不是为了证明药有效，而是为了排除"不吃药也会好"这种可能。<strong>没有对照的"好了"，不是因果证据。</strong></span></li>
+<li><span class="num">4</span><span><strong>幸存者偏差是因果推断中最隐蔽的杀手。</strong> 你只看到了"活下来的人"的数据——那些被淘汰的、失败的、死去的数据不在你的样本中。成功创业者的特征"共同点"，可能只是活下来的人的巧合——失败者可能也有同样的特征，但你看不见他们。<strong>每次做因果判断前问：那些"我没看到的人"去了哪里？</strong></span></li>
+<li><span class="num">5</span><span><strong>"干预"和"观察"之间的鸿沟，是人类理性最重要的一条护城河。</strong> 大数据时代最大的诱惑是：数据如此丰富，我们不需要做实验了——从数据中就能找到一切答案。这是危险的幻觉。再多的观察数据也无法自动回答"如果我做了X会怎样"——因为观察数据中X和Y的关系被混淆变量污染了。<strong>因果推断提醒我们：理解世界不仅需要看得多，还需要问得对。</strong>而"问得对"的核心能力，是区分"我看到了什么"和"什么导致了什么"。</span></li>
+</ul>
+
+<div class="insight-box" style="margin-top:48px">
+因果推断的终极启示是：<strong>宇宙不会主动告诉你什么导致了什么。它只会给你看一堆事情同时发生的画面。</strong><br><br>
+从这堆画面中提取因果——需要假设、需要设计、需要实验、需要对反事实的想象力。这不是算法能替你做的事。<br><br>
+<strong>在一个充斥着"大数据说……""研究发现……"的世界里，保持追问"是相关还是因果"的习惯，就是你对抗信息操纵的最强抗体。</strong>
+</div>
+</div>
+</section>
+
+<div class="colophon">— FIN —</div>
+
+<script>
+const chapters=document.querySelectorAll('.chapter'),tocLinks=document.querySelectorAll('.toc a');
+const observer=new IntersectionObserver(e=>{e.forEach(e=>{e.isIntersecting&&e.target.classList.add('visible')})},{threshold:.15});
+chapters.forEach(c=>observer.observe(c));
+const sections=document.querySelectorAll('.chapter,.finale');
+window.addEventListener('scroll',()=>{let c='';sections.forEach(s=>{window.scrollY>=s.offsetTop-200&&(c=s.id)});tocLinks.forEach(l=>{l.classList.toggle('active',l.getAttribute('href')==='#'+c)})});
+</script>
+</body>
+</html>

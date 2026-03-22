@@ -1,0 +1,850 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>万物的本质 — 知识星图</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;600;700;900&family=Noto+Sans+SC:wght@300;400;500;700&family=Playfair+Display:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #08090c;
+  --bg-card: #12141a;
+  --bg-card-hover: #1a1d26;
+  --text: #c8ccd4;
+  --text-bright: #eaedf2;
+  --text-dim: #6b7280;
+  --border: #1f2330;
+  --border-hover: #2d3348;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'Noto Sans SC', sans-serif;
+  overflow: hidden;
+  height: 100vh;
+  width: 100vw;
+  cursor: default;
+  user-select: none;
+}
+
+/* ====== CANVAS ====== */
+#graph-canvas {
+  position: fixed;
+  inset: 0;
+  z-index: 1;
+}
+
+/* ====== HEADER ====== */
+.header {
+  position: fixed;
+  top: 0; left: 0; right: 0;
+  z-index: 100;
+  padding: 24px 32px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  pointer-events: none;
+  background: linear-gradient(to bottom, rgba(8,9,12,0.9) 0%, transparent 100%);
+}
+
+.header-left {
+  pointer-events: auto;
+}
+
+.header h1 {
+  font-family: 'Noto Serif SC', serif;
+  font-weight: 900;
+  font-size: 22px;
+  color: var(--text-bright);
+  letter-spacing: 2px;
+}
+
+.header h1 span {
+  font-family: 'Playfair Display', serif;
+  font-weight: 400;
+  font-style: italic;
+  font-size: 14px;
+  color: var(--text-dim);
+  margin-left: 12px;
+  letter-spacing: 0;
+}
+
+.header-right {
+  display: flex;
+  gap: 8px;
+  pointer-events: auto;
+}
+
+.view-btn {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  color: var(--text-dim);
+  font-family: 'Noto Sans SC', sans-serif;
+  font-size: 13px;
+  padding: 6px 14px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.view-btn:hover, .view-btn.active {
+  background: var(--bg-card-hover);
+  color: var(--text-bright);
+  border-color: var(--border-hover);
+}
+
+/* ====== LEGEND ====== */
+.legend {
+  position: fixed;
+  bottom: 24px;
+  left: 32px;
+  z-index: 100;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  pointer-events: auto;
+}
+
+.legend-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  color: var(--text-dim);
+  cursor: pointer;
+  transition: color 0.2s;
+}
+
+.legend-item:hover {
+  color: var(--text-bright);
+}
+
+.legend-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+/* ====== TOOLTIP ====== */
+.tooltip {
+  position: fixed;
+  z-index: 200;
+  pointer-events: none;
+  background: var(--bg-card);
+  border: 1px solid var(--border-hover);
+  border-radius: 12px;
+  padding: 20px 24px;
+  max-width: 340px;
+  opacity: 0;
+  transform: translateY(8px);
+  transition: opacity 0.25s, transform 0.25s;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.5);
+}
+
+.tooltip.visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.tooltip-category {
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  margin-bottom: 6px;
+}
+
+.tooltip-title {
+  font-family: 'Noto Serif SC', serif;
+  font-weight: 700;
+  font-size: 18px;
+  color: var(--text-bright);
+  line-height: 1.4;
+  margin-bottom: 8px;
+}
+
+.tooltip-subtitle {
+  font-size: 13px;
+  color: var(--text-dim);
+  line-height: 1.6;
+  margin-bottom: 12px;
+}
+
+.tooltip-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+
+.tooltip-tag {
+  font-size: 11px;
+  padding: 2px 8px;
+  border-radius: 10px;
+  background: rgba(255,255,255,0.06);
+  color: var(--text-dim);
+}
+
+.tooltip-hint {
+  margin-top: 12px;
+  font-size: 11px;
+  color: var(--text-dim);
+  opacity: 0.6;
+  font-style: italic;
+}
+
+/* ====== LIST VIEW ====== */
+.list-view {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  background: var(--bg);
+  overflow-y: auto;
+  padding: 100px 32px 60px;
+  display: none;
+}
+
+.list-view.active {
+  display: block;
+}
+
+.list-grid {
+  max-width: 1100px;
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 16px;
+}
+
+.list-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 24px;
+  cursor: pointer;
+  transition: all 0.25s;
+  text-decoration: none;
+  color: inherit;
+  display: block;
+}
+
+.list-card:hover {
+  background: var(--bg-card-hover);
+  border-color: var(--border-hover);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(0,0,0,0.3);
+}
+
+.list-card-cat {
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  margin-bottom: 8px;
+}
+
+.list-card-title {
+  font-family: 'Noto Serif SC', serif;
+  font-weight: 700;
+  font-size: 17px;
+  color: var(--text-bright);
+  line-height: 1.4;
+  margin-bottom: 8px;
+}
+
+.list-card-sub {
+  font-size: 13px;
+  color: var(--text-dim);
+  line-height: 1.6;
+}
+
+.list-card-accent {
+  width: 100%;
+  height: 3px;
+  border-radius: 2px;
+  margin-top: 16px;
+  opacity: 0.6;
+}
+
+/* ====== STATS ====== */
+.stats {
+  position: fixed;
+  bottom: 24px;
+  right: 32px;
+  z-index: 100;
+  text-align: right;
+  font-size: 12px;
+  color: var(--text-dim);
+  pointer-events: none;
+  line-height: 1.8;
+}
+
+/* ====== RESPONSIVE ====== */
+@media (max-width: 768px) {
+  .header { padding: 16px 20px; }
+  .header h1 { font-size: 18px; }
+  .header h1 span { display: none; }
+  .legend { left: 20px; bottom: 16px; }
+  .stats { right: 20px; }
+  .list-view { padding: 90px 20px 40px; }
+  .list-grid { grid-template-columns: 1fr; }
+}
+</style>
+</head>
+<body>
+
+<canvas id="graph-canvas"></canvas>
+
+<header class="header">
+  <div class="header-left">
+    <h1>万物的本质 <span>The Essence of Everything</span></h1>
+  </div>
+  <div class="header-right">
+    <button class="view-btn active" id="btn-graph">星图</button>
+    <button class="view-btn" id="btn-list">目录</button>
+  </div>
+</header>
+
+<div class="legend" id="legend"></div>
+
+<div class="tooltip" id="tooltip">
+  <div class="tooltip-category" id="tip-cat"></div>
+  <div class="tooltip-title" id="tip-title"></div>
+  <div class="tooltip-subtitle" id="tip-sub"></div>
+  <div class="tooltip-tags" id="tip-tags"></div>
+  <div class="tooltip-hint">点击打开文章</div>
+</div>
+
+<div class="stats" id="stats"></div>
+
+<div class="list-view" id="list-view">
+  <div class="list-grid" id="list-grid"></div>
+</div>
+
+<script>
+// ====================================================================
+// DATA: Articles, categories, and relationships
+// To add a new article: add an entry to ARTICLES and optionally EDGES
+// ====================================================================
+const CATEGORIES = {
+  'math':    { label: '数学',       color: '#3b82f6' },
+  'stats':   { label: '统计与数据', color: '#8b5cf6' },
+  'cs':      { label: '计算机科学', color: '#22c55e' },
+  'physics': { label: '物理学',     color: '#ef4444' },
+  'biology': { label: '生命科学',   color: '#84cc16' },
+  'social':  { label: '社会与文明', color: '#f59e0b' },
+  'cognition': { label: '认知科学', color: '#f472b6' },
+  'systems':   { label: '复杂系统', color: '#14b8a6' },
+};
+
+const ARTICLES = [
+  { id: 'finance',      cat: 'social',  title: '金融的本质',       sub: '时间·信用·人性',           file: '金融的本质.html',       tags: ['信用创造','债务周期','美元潮汐'] },
+  { id: 'analysis',     cat: 'math',    title: '数学分析的本质',   sub: '无穷·逼近·变化',           file: '数学分析的本质.html',   tags: ['极限','导数','积分','泰勒展开'] },
+  { id: 'linalg',       cat: 'math',    title: '线性代数的本质',   sub: '空间·变换·视角',           file: '线性代数的本质.html',   tags: ['向量','矩阵','特征值','降维'] },
+  { id: 'prob',         cat: 'stats',   title: '概率论的本质',     sub: '未知·信息·秩序',           file: '概率论的本质.html',     tags: ['期望','大数定律','中心极限','贝叶斯'] },
+  { id: 'mathstat',     cat: 'stats',   title: '数理统计的本质',   sub: '逆向工程·证据·真相',       file: '数理统计的本质.html',   tags: ['MLE','假设检验','P值','置信区间'] },
+  { id: 'regression',   cat: 'stats',   title: '回归分析的本质',   sub: '信号·噪音·责任归属',       file: '回归分析的本质.html',   tags: ['OLS','多元回归','过拟合','投影'] },
+  { id: 'timeseries',   cat: 'stats',   title: '时间序列的本质',   sub: '周期·记忆·预测未来',       file: '时间序列的本质.html',   tags: ['ARIMA','季节性','GARCH','波动率'] },
+  { id: 'causal',       cat: 'stats',   title: '因果推断的本质',   sub: '平行宇宙·干预·真相',       file: '因果推断的本质.html',   tags: ['RCT','混淆变量','反事实','辛普森悖论'] },
+  { id: 'bayesian',     cat: 'stats',   title: '贝叶斯统计的本质', sub: '偏见·证据·信念进化',       file: '贝叶斯统计的本质.html', tags: ['先验','后验','MCMC','信念更新'] },
+  { id: 'stochastic',   cat: 'stats',   title: '随机过程的本质',   sub: '时间·记忆·动态混沌',       file: '随机过程的本质.html',   tags: ['随机游走','马尔可夫','鞅','布朗运动'] },
+  { id: 'ml',           cat: 'cs',      title: '统计学习的本质',   sub: '预测·泛化·高维映射',       file: '统计学习的本质.html',   tags: ['SVM','过拟合','PCA','正则化'] },
+  { id: 'cs',           cat: 'cs',      title: '计算机科学的本质', sub: '逻辑·抽象·信息',           file: '计算机科学的本质.html', tags: ['逻辑门','抽象层叠','算法','涌现'] },
+  { id: 'thermo',       cat: 'physics', title: '物理的本质',       sub: '能量·秩序·时间之箭',       file: '物理的本质.html',       tags: ['热力学','熵','负熵','引擎'] },
+  { id: 'evolution',    cat: 'biology', title: '生命的本质',       sub: '盲目·选择·基因算法',       file: '生命的本质.html',       tags: ['自然选择','红皇后','性选择','本能错位'] },
+  { id: 'civilization', cat: 'social',  title: '文明的物理本质',   sub: '能量·技术·权力',           file: '文明的物理本质.html',   tags: ['能量密度','化石燃料','芯片','地缘'] },
+  { id: 'cognition',    cat: 'cognition', title: '认知的本质',       sub: '远古硬件·现代Bug·自我反侦察', file: '认知的本质.html',       tags: ['恐惧系统','奖赏回路','敌我分类','元认知'] },
+  { id: 'mindalgo',     cat: 'cognition', title: '心智的算法本质',   sub: '预测·幻觉·信念机器',       file: '心智的算法本质.html',   tags: ['预测引擎','信息压缩','信念更新','受控幻觉'] },
+  { id: 'complex',      cat: 'systems',   title: '复杂系统的本质',   sub: '涌现·脆弱·非线性',         file: '复杂系统的本质.html',   tags: ['涌现','正反馈','临界态','反脆弱'] },
+  { id: 'network',      cat: 'systems',   title: '复杂网络的本质',   sub: '节点·连接·权力拓扑',       file: '复杂网络的本质.html',   tags: ['超级节点','优先连接','二八定律','相变'] },
+];
+
+// Edges: [sourceId, targetId, label]
+const EDGES = [
+  ['analysis',   'linalg',       '互为工具'],
+  ['analysis',   'prob',         '测度论基础'],
+  ['linalg',     'ml',           '特征值→PCA'],
+  ['linalg',     'regression',   '投影=OLS'],
+  ['prob',       'mathstat',     '正向↔逆向'],
+  ['prob',       'bayesian',     '贝叶斯定理'],
+  ['prob',       'stochastic',   '加上时间维度'],
+  ['mathstat',   'regression',   '参数估计'],
+  ['mathstat',   'causal',       '假设检验→RCT'],
+  ['regression', 'ml',           '从解释到预测'],
+  ['regression', 'timeseries',   '加上时间结构'],
+  ['bayesian',   'ml',           '先验→正则化'],
+  ['bayesian',   'causal',       '信念更新→因果'],
+  ['stochastic', 'timeseries',   'AR=马尔可夫'],
+  ['stochastic', 'finance',      '鞅→有效市场'],
+  ['thermo',     'evolution',    '负熵→生命'],
+  ['thermo',     'civilization', '能量→文明'],
+  ['evolution',  'civilization', '人类→社会'],
+  ['finance',    'civilization', '金融⊂文明'],
+  ['cs',         'ml',           '算法→学习'],
+  ['ml',         'timeseries',   '预测方法'],
+  ['causal',     'regression',   '回归≠因果'],
+  ['evolution',  'cognition',    '本能→认知偏差'],
+  ['cognition',  'mindalgo',     '硬件↔软件视角'],
+  ['bayesian',   'mindalgo',     '先验→预测引擎'],
+  ['prob',       'mindalgo',     '概率→信念更新'],
+  ['cognition',  'finance',      '非理性→市场泡沫'],
+  ['cognition',  'ml',           '人脑↔机器学习'],
+  ['mindalgo',   'cs',           '信息压缩→抽象'],
+  ['complex',    'thermo',       '熵增→涌现'],
+  ['complex',    'stochastic',   '非线性→随机过程'],
+  ['complex',    'finance',      '正反馈→泡沫崩盘'],
+  ['complex',    'network',      '宏观↔微观视角'],
+  ['network',    'ml',           '图结构→图神经网络'],
+  ['network',    'civilization', '权力拓扑→地缘格局'],
+  ['network',    'cs',           '网络→互联网'],
+  ['complex',    'evolution',    '涌现→物种适应'],
+];
+
+// ====================================================================
+// FORCE-DIRECTED GRAPH SIMULATION
+// ====================================================================
+const canvas = document.getElementById('graph-canvas');
+const ctx = canvas.getContext('2d');
+let W, H, dpr;
+let nodes = [];
+let edges = [];
+let hoveredNode = null;
+let dragNode = null;
+let offsetX = 0, offsetY = 0;
+let scale = 1;
+let panX = 0, panY = 0;
+let isPanning = false;
+let panStart = { x: 0, y: 0 };
+let animFrame;
+
+function resize() {
+  dpr = window.devicePixelRatio || 1;
+  W = window.innerWidth;
+  H = window.innerHeight;
+  canvas.width = W * dpr;
+  canvas.height = H * dpr;
+  canvas.style.width = W + 'px';
+  canvas.style.height = H + 'px';
+  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+}
+
+function initGraph() {
+  const cx = W / 2, cy = H / 2;
+  const radius = Math.min(W, H) * 0.3;
+
+  nodes = ARTICLES.map((a, i) => {
+    const angle = (i / ARTICLES.length) * Math.PI * 2 - Math.PI / 2;
+    return {
+      ...a,
+      x: cx + Math.cos(angle) * radius + (Math.random() - 0.5) * 60,
+      y: cy + Math.sin(angle) * radius + (Math.random() - 0.5) * 60,
+      vx: 0, vy: 0,
+      radius: 22,
+      color: CATEGORIES[a.cat].color,
+    };
+  });
+
+  edges = EDGES.map(([s, t, label]) => ({
+    source: nodes.find(n => n.id === s),
+    target: nodes.find(n => n.id === t),
+    label,
+  })).filter(e => e.source && e.target);
+}
+
+function simulate() {
+  const alpha = 0.15;
+  const repulsion = 4000;
+  const attraction = 0.008;
+  const idealDist = 180;
+  const centerForce = 0.002;
+  const damping = 0.85;
+  const cx = W / 2, cy = H / 2;
+
+  // Repulsion between all nodes
+  for (let i = 0; i < nodes.length; i++) {
+    for (let j = i + 1; j < nodes.length; j++) {
+      const a = nodes[i], b = nodes[j];
+      let dx = a.x - b.x, dy = a.y - b.y;
+      let dist = Math.sqrt(dx * dx + dy * dy) || 1;
+      let force = repulsion / (dist * dist);
+      let fx = (dx / dist) * force * alpha;
+      let fy = (dy / dist) * force * alpha;
+      a.vx += fx; a.vy += fy;
+      b.vx -= fx; b.vy -= fy;
+    }
+  }
+
+  // Attraction along edges
+  for (const e of edges) {
+    const a = e.source, b = e.target;
+    let dx = b.x - a.x, dy = b.y - a.y;
+    let dist = Math.sqrt(dx * dx + dy * dy) || 1;
+    let force = (dist - idealDist) * attraction * alpha;
+    let fx = (dx / dist) * force;
+    let fy = (dy / dist) * force;
+    a.vx += fx; a.vy += fy;
+    b.vx -= fx; b.vy -= fy;
+  }
+
+  // Center gravity
+  for (const n of nodes) {
+    n.vx += (cx - n.x) * centerForce * alpha;
+    n.vy += (cy - n.y) * centerForce * alpha;
+  }
+
+  // Apply velocity
+  for (const n of nodes) {
+    if (n === dragNode) continue;
+    n.vx *= damping;
+    n.vy *= damping;
+    n.x += n.vx;
+    n.y += n.vy;
+  }
+}
+
+function draw() {
+  ctx.clearRect(0, 0, W, H);
+
+  // Background subtle grid
+  ctx.save();
+  ctx.translate(panX, panY);
+  ctx.scale(scale, scale);
+
+  // Draw edges
+  for (const e of edges) {
+    const isHovered = hoveredNode && (e.source === hoveredNode || e.target === hoveredNode);
+    ctx.beginPath();
+    ctx.moveTo(e.source.x, e.source.y);
+    ctx.lineTo(e.target.x, e.target.y);
+    ctx.strokeStyle = isHovered ? 'rgba(255,255,255,0.25)' : 'rgba(255,255,255,0.06)';
+    ctx.lineWidth = isHovered ? 1.5 : 0.8;
+    ctx.stroke();
+
+    // Edge label
+    if (isHovered && e.label) {
+      const mx = (e.source.x + e.target.x) / 2;
+      const my = (e.source.y + e.target.y) / 2;
+      ctx.font = '11px "Noto Sans SC"';
+      ctx.fillStyle = 'rgba(255,255,255,0.4)';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText(e.label, mx, my - 8);
+    }
+  }
+
+  // Draw nodes
+  for (const n of nodes) {
+    const isHovered = n === hoveredNode;
+    const isConnected = hoveredNode && edges.some(e =>
+      (e.source === hoveredNode && e.target === n) ||
+      (e.target === hoveredNode && e.source === n)
+    );
+    const isDimmed = hoveredNode && !isHovered && !isConnected;
+
+    // Glow
+    if (isHovered) {
+      const grd = ctx.createRadialGradient(n.x, n.y, n.radius, n.x, n.y, n.radius * 3);
+      grd.addColorStop(0, n.color + '30');
+      grd.addColorStop(1, 'transparent');
+      ctx.fillStyle = grd;
+      ctx.beginPath();
+      ctx.arc(n.x, n.y, n.radius * 3, 0, Math.PI * 2);
+      ctx.fill();
+    }
+
+    // Node circle
+    ctx.beginPath();
+    ctx.arc(n.x, n.y, n.radius, 0, Math.PI * 2);
+    const opacity = isDimmed ? '30' : (isHovered ? 'ff' : 'cc');
+    ctx.fillStyle = n.color + (isDimmed ? '18' : '22');
+    ctx.fill();
+    ctx.strokeStyle = n.color + opacity;
+    ctx.lineWidth = isHovered ? 2.5 : 1.5;
+    ctx.stroke();
+
+    // Inner dot
+    ctx.beginPath();
+    ctx.arc(n.x, n.y, 4, 0, Math.PI * 2);
+    ctx.fillStyle = n.color + opacity;
+    ctx.fill();
+
+    // Label
+    const labelOpacity = isDimmed ? 0.2 : (isHovered ? 1 : 0.7);
+    ctx.font = `${isHovered ? 600 : 400} 13px "Noto Sans SC"`;
+    ctx.fillStyle = `rgba(234,237,242,${labelOpacity})`;
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'top';
+    ctx.fillText(n.title.replace('的本质', ''), n.x, n.y + n.radius + 6);
+  }
+
+  ctx.restore();
+
+  animFrame = requestAnimationFrame(loop);
+}
+
+function loop() {
+  simulate();
+  draw();
+}
+
+// ====================================================================
+// INTERACTION
+// ====================================================================
+function screenToWorld(sx, sy) {
+  return { x: (sx - panX) / scale, y: (sy - panY) / scale };
+}
+
+function getNodeAt(sx, sy) {
+  const { x, y } = screenToWorld(sx, sy);
+  for (let i = nodes.length - 1; i >= 0; i--) {
+    const n = nodes[i];
+    const dx = x - n.x, dy = y - n.y;
+    if (dx * dx + dy * dy < (n.radius + 8) * (n.radius + 8)) return n;
+  }
+  return null;
+}
+
+const tooltip = document.getElementById('tooltip');
+const tipCat = document.getElementById('tip-cat');
+const tipTitle = document.getElementById('tip-title');
+const tipSub = document.getElementById('tip-sub');
+const tipTags = document.getElementById('tip-tags');
+
+function showTooltip(n, mx, my) {
+  tipCat.textContent = CATEGORIES[n.cat].label;
+  tipCat.style.color = n.color;
+  tipTitle.textContent = n.title;
+  tipSub.textContent = n.sub.split('·').join(' · ');
+  tipTags.innerHTML = n.tags.map(t => `<span class="tooltip-tag">${t}</span>`).join('');
+
+  let tx = mx + 20, ty = my - 20;
+  if (tx + 340 > W) tx = mx - 360;
+  if (ty + 240 > H) ty = H - 250;
+  if (ty < 10) ty = 10;
+
+  tooltip.style.left = tx + 'px';
+  tooltip.style.top = ty + 'px';
+  tooltip.classList.add('visible');
+}
+
+function hideTooltip() {
+  tooltip.classList.remove('visible');
+}
+
+canvas.addEventListener('mousemove', e => {
+  const mx = e.clientX, my = e.clientY;
+
+  if (isPanning && !dragNode) {
+    panX = mx - panStart.x;
+    panY = my - panStart.y;
+    return;
+  }
+
+  if (dragNode) {
+    const { x, y } = screenToWorld(mx, my);
+    dragNode.x = x;
+    dragNode.y = y;
+    dragNode.vx = 0;
+    dragNode.vy = 0;
+    return;
+  }
+
+  const n = getNodeAt(mx, my);
+  hoveredNode = n;
+  canvas.style.cursor = n ? 'pointer' : (isPanning ? 'grabbing' : 'grab');
+
+  if (n) {
+    showTooltip(n, mx, my);
+  } else {
+    hideTooltip();
+  }
+});
+
+canvas.addEventListener('mousedown', e => {
+  const n = getNodeAt(e.clientX, e.clientY);
+  if (n) {
+    dragNode = n;
+    canvas.style.cursor = 'grabbing';
+  } else {
+    isPanning = true;
+    panStart = { x: e.clientX - panX, y: e.clientY - panY };
+    canvas.style.cursor = 'grabbing';
+  }
+});
+
+canvas.addEventListener('mouseup', e => {
+  if (dragNode) {
+    // Check if it was a click (not drag)
+    const n = getNodeAt(e.clientX, e.clientY);
+    if (n && n === dragNode) {
+      window.open(n.file, '_blank');
+    }
+  }
+  dragNode = null;
+  isPanning = false;
+  canvas.style.cursor = hoveredNode ? 'pointer' : 'grab';
+});
+
+canvas.addEventListener('mouseleave', () => {
+  hoveredNode = null;
+  dragNode = null;
+  isPanning = false;
+  hideTooltip();
+});
+
+canvas.addEventListener('wheel', e => {
+  e.preventDefault();
+  const factor = e.deltaY > 0 ? 0.92 : 1.08;
+  const newScale = Math.max(0.3, Math.min(3, scale * factor));
+  const mx = e.clientX, my = e.clientY;
+  panX = mx - (mx - panX) * (newScale / scale);
+  panY = my - (my - panY) * (newScale / scale);
+  scale = newScale;
+}, { passive: false });
+
+// Touch support
+let touchStartDist = 0;
+let touchStartScale = 1;
+
+canvas.addEventListener('touchstart', e => {
+  if (e.touches.length === 1) {
+    const t = e.touches[0];
+    const n = getNodeAt(t.clientX, t.clientY);
+    if (n) {
+      dragNode = n;
+      showTooltip(n, t.clientX, t.clientY);
+    } else {
+      isPanning = true;
+      panStart = { x: t.clientX - panX, y: t.clientY - panY };
+    }
+  } else if (e.touches.length === 2) {
+    const dx = e.touches[0].clientX - e.touches[1].clientX;
+    const dy = e.touches[0].clientY - e.touches[1].clientY;
+    touchStartDist = Math.sqrt(dx * dx + dy * dy);
+    touchStartScale = scale;
+  }
+}, { passive: true });
+
+canvas.addEventListener('touchmove', e => {
+  e.preventDefault();
+  if (e.touches.length === 1) {
+    const t = e.touches[0];
+    if (dragNode) {
+      const { x, y } = screenToWorld(t.clientX, t.clientY);
+      dragNode.x = x; dragNode.y = y;
+      dragNode.vx = 0; dragNode.vy = 0;
+    } else if (isPanning) {
+      panX = t.clientX - panStart.x;
+      panY = t.clientY - panStart.y;
+    }
+  } else if (e.touches.length === 2) {
+    const dx = e.touches[0].clientX - e.touches[1].clientX;
+    const dy = e.touches[0].clientY - e.touches[1].clientY;
+    const dist = Math.sqrt(dx * dx + dy * dy);
+    scale = Math.max(0.3, Math.min(3, touchStartScale * (dist / touchStartDist)));
+  }
+}, { passive: false });
+
+canvas.addEventListener('touchend', e => {
+  if (dragNode && e.changedTouches.length === 1) {
+    const t = e.changedTouches[0];
+    const n = getNodeAt(t.clientX, t.clientY);
+    if (n && n === dragNode) window.open(n.file, '_blank');
+  }
+  dragNode = null;
+  isPanning = false;
+  hideTooltip();
+});
+
+// ====================================================================
+// LIST VIEW
+// ====================================================================
+const btnGraph = document.getElementById('btn-graph');
+const btnList = document.getElementById('btn-list');
+const listView = document.getElementById('list-view');
+const listGrid = document.getElementById('list-grid');
+
+function buildList() {
+  // Group by category
+  const groups = {};
+  for (const a of ARTICLES) {
+    if (!groups[a.cat]) groups[a.cat] = [];
+    groups[a.cat].push(a);
+  }
+
+  listGrid.innerHTML = '';
+  for (const [catId, catInfo] of Object.entries(CATEGORIES)) {
+    if (!groups[catId]) continue;
+    for (const a of groups[catId]) {
+      const card = document.createElement('a');
+      card.className = 'list-card';
+      card.href = a.file;
+      card.target = '_blank';
+      card.innerHTML = `
+        <div class="list-card-cat" style="color:${catInfo.color}">${catInfo.label}</div>
+        <div class="list-card-title">${a.title}</div>
+        <div class="list-card-sub">${a.sub.split('·').join(' · ')}</div>
+        <div class="list-card-accent" style="background:linear-gradient(90deg,${catInfo.color},transparent)"></div>
+      `;
+      listGrid.appendChild(card);
+    }
+  }
+}
+
+btnGraph.addEventListener('click', () => {
+  btnGraph.classList.add('active');
+  btnList.classList.remove('active');
+  listView.classList.remove('active');
+  canvas.style.display = 'block';
+});
+
+btnList.addEventListener('click', () => {
+  btnList.classList.add('active');
+  btnGraph.classList.remove('active');
+  listView.classList.add('active');
+  canvas.style.display = 'none';
+});
+
+// ====================================================================
+// LEGEND & STATS
+// ====================================================================
+function buildLegend() {
+  const legend = document.getElementById('legend');
+  for (const [id, cat] of Object.entries(CATEGORIES)) {
+    const count = ARTICLES.filter(a => a.cat === id).length;
+    if (count === 0) continue;
+    const el = document.createElement('div');
+    el.className = 'legend-item';
+    el.innerHTML = `<div class="legend-dot" style="background:${cat.color}"></div>${cat.label} (${count})`;
+    legend.appendChild(el);
+  }
+}
+
+function buildStats() {
+  document.getElementById('stats').innerHTML =
+    `${ARTICLES.length} 篇文章 · ${EDGES.length} 条关联<br>滚轮缩放 · 拖拽平移 · 点击打开`;
+}
+
+// ====================================================================
+// INIT
+// ====================================================================
+function init() {
+  resize();
+  initGraph();
+  buildLegend();
+  buildStats();
+  buildList();
+  loop();
+}
+
+window.addEventListener('resize', () => {
+  resize();
+});
+
+init();
+</script>
+</body>
+</html>
