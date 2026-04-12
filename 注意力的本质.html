@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>注意力的本质 — 一场关于稀缺、劫持与生命流向的推演</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;600;700;900&family=Noto+Sans+SC:wght@300;400;500;700&family=Playfair+Display:ital,wght@0,700;1,700&display=swap" rel="stylesheet">
+<style>
+:root{--ink:#1a1a1a;--paper:#f0eef2;--paper-deep:#e0dce6;--accent:#3730a3;--accent-light:#6366f1;--gold:#a16207;--gold-light:#ca8a04;--muted:#5c5668;--divider:#b8b2c4;--highlight:#eef2ff}
+*{margin:0;padding:0;box-sizing:border-box}html{scroll-behavior:smooth}
+body{background:var(--paper);color:var(--ink);font-family:'Noto Sans SC',sans-serif;font-weight:400;line-height:2;font-size:17px;-webkit-font-smoothing:antialiased}
+.hero{min-height:100vh;display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center;padding:60px 24px;position:relative;overflow:hidden;background:linear-gradient(160deg,#060518 0%,#141232 35%,#1a1408 65%,#060518 100%)}
+.hero::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse 500px 380px at 40% 45%,rgba(99,102,241,.10) 0%,transparent 70%),radial-gradient(ellipse 400px 380px at 60% 60%,rgba(202,138,4,.07) 0%,transparent 70%);pointer-events:none}
+.hero::after{content:'';position:absolute;width:400px;height:400px;top:50%;left:50%;transform:translate(-50%,-50%);border:1px solid rgba(99,102,241,.05);border-radius:50%;box-shadow:0 0 0 80px rgba(99,102,241,.03),0 0 0 160px rgba(99,102,241,.02);pointer-events:none}
+.hero-eyebrow{font-family:'Noto Sans SC',sans-serif;font-weight:300;font-size:14px;letter-spacing:6px;text-transform:uppercase;color:var(--gold-light);opacity:0;animation:fadeUp 1s .3s forwards;margin-bottom:32px;position:relative;z-index:1}
+.hero h1{font-family:'Noto Serif SC',serif;font-weight:900;font-size:clamp(40px,7.5vw,76px);color:#f0eef2;line-height:1.2;opacity:0;animation:fadeUp 1s .6s forwards;position:relative;z-index:1}
+.hero h1 span{display:block;background:linear-gradient(135deg,var(--accent-light),var(--gold-light));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.hero-subtitle{font-family:'Noto Sans SC',sans-serif;font-weight:300;font-size:clamp(16px,2.5vw,20px);color:rgba(240,238,242,.50);max-width:620px;margin-top:28px;line-height:1.8;opacity:0;animation:fadeUp 1s .9s forwards;position:relative;z-index:1}
+.hero-scroll{position:absolute;bottom:40px;opacity:0;animation:fadeUp 1s 1.2s forwards;z-index:1}
+.hero-scroll span{display:block;width:1px;height:48px;background:linear-gradient(to bottom,var(--gold-light),transparent);margin:0 auto;animation:pulse 2s infinite}
+@keyframes fadeUp{from{opacity:0;transform:translateY(24px)}to{opacity:1;transform:translateY(0)}}
+@keyframes pulse{0%,100%{opacity:.3}50%{opacity:1}}
+.content{max-width:720px;margin:0 auto;padding:80px 24px 120px}
+.chapter{margin-bottom:80px;opacity:0;transform:translateY(30px);transition:opacity .8s ease,transform .8s ease}.chapter.visible{opacity:1;transform:translateY(0)}
+.chapter-number{font-family:'Playfair Display',serif;font-size:13px;font-weight:700;letter-spacing:3px;color:var(--accent);text-transform:uppercase;margin-bottom:8px}
+.chapter h2{font-family:'Noto Serif SC',serif;font-weight:700;font-size:clamp(26px,4vw,34px);line-height:1.4;color:var(--ink);margin-bottom:32px}
+.chapter h2::after{content:'';display:block;width:48px;height:3px;background:linear-gradient(to right,var(--accent),var(--gold-light));margin-top:16px;border-radius:2px}
+.chapter p{margin-bottom:20px;color:#2d2a26}
+.insight-box{background:linear-gradient(135deg,rgba(55,48,163,.08),rgba(55,48,163,.02));border-left:3px solid var(--accent);padding:24px 28px;margin:32px 0;border-radius:0 8px 8px 0;font-family:'Noto Serif SC',serif;font-size:18px;line-height:1.9;color:#1a1838}
+.scene-box{background:#fff;border:1px solid var(--divider);border-radius:12px;padding:28px 32px;margin:32px 0;position:relative;box-shadow:0 2px 16px rgba(0,0,0,.04)}
+.scene-box::before{content:'👁️';position:absolute;top:-16px;left:24px;font-size:28px;background:var(--paper);padding:0 8px}
+.scene-box.light::before{content:'💡'}
+.scene-box.clock::before{content:'⏳'}
+.scene-box.hook::before{content:'🎣'}
+.scene-box.mirror::before{content:'🪞'}
+.scene-box.shield::before{content:'🛡️'}
+.scene-box.coin::before{content:'🪙'}
+.scene-box h3{font-family:'Noto Serif SC',serif;font-weight:600;font-size:18px;color:var(--accent);margin-bottom:12px}
+.key-point{background:var(--highlight);padding:3px 8px;border-radius:3px;font-weight:500}
+.chain{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin:24px 0;font-size:15px;font-weight:500;color:var(--muted)}
+.chain .node{background:#fff;border:1px solid var(--divider);padding:6px 14px;border-radius:20px;color:var(--ink);font-size:14px}
+.chain .arrow{color:var(--accent);font-weight:700;font-size:16px}
+.section-divider{text-align:center;margin:64px 0;color:var(--divider);font-size:20px;letter-spacing:12px}
+.finale{background:linear-gradient(160deg,#060518,#141232,#060518);color:var(--paper);padding:80px 24px;margin-top:40px}
+.finale-inner{max-width:720px;margin:0 auto}
+.finale h2{font-family:'Noto Serif SC',serif;font-weight:900;font-size:clamp(28px,5vw,38px);background:linear-gradient(135deg,var(--accent-light),var(--gold-light));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;margin-bottom:36px;line-height:1.4}
+.finale p{color:rgba(240,238,242,.8);margin-bottom:20px;line-height:2}
+.finale .insight-box{background:rgba(99,102,241,.08);border-left-color:var(--accent-light);color:rgba(240,238,242,.9)}
+.finale-rules{list-style:none;padding:0;margin:32px 0}
+.finale-rules li{padding:16px 0;border-bottom:1px solid rgba(240,238,242,.1);color:rgba(240,238,242,.85);line-height:1.9;display:flex;gap:12px}
+.finale-rules li .num{font-family:'Playfair Display',serif;font-weight:700;color:var(--gold-light);font-size:20px;flex-shrink:0;width:28px}
+.colophon{text-align:center;padding:40px 24px;color:var(--muted);font-size:13px;letter-spacing:2px}
+.toc{position:fixed;right:24px;top:50%;transform:translateY(-50%);z-index:100;display:flex;flex-direction:column;gap:12px}
+.toc a{display:block;width:8px;height:8px;border-radius:50%;background:var(--divider);transition:all .3s;position:relative;text-decoration:none}
+.toc a.active{background:var(--accent-light);transform:scale(1.4)}
+.toc a::after{content:attr(data-label);position:absolute;right:20px;top:50%;transform:translateY(-50%);white-space:nowrap;font-size:12px;color:var(--muted);opacity:0;transition:opacity .3s;pointer-events:none;font-family:'Noto Sans SC',sans-serif}
+.toc a:hover::after{opacity:1}
+@media(max-width:900px){.toc{display:none}}
+@media(max-width:600px){.content{padding:48px 20px 80px}.scene-box{padding:20px}.insight-box{padding:20px 22px}body{font-size:16px}}
+</style>
+</head>
+<body>
+<nav class="toc" id="toc"><a href="#ch1" data-label="注意力的灵魂"></a><a href="#ch2" data-label="聚光灯与暗房"></a><a href="#ch3" data-label="注意力经济"></a><a href="#ch4" data-label="被编程的你"></a><a href="#ch5" data-label="本质总结"></a></nav>
+
+<header class="hero">
+<div class="hero-eyebrow">A First-Principles Exploration</div>
+<h1>注意力的本质<span>稀缺 · 劫持 · 生命流向</span></h1>
+<p class="hero-subtitle">一场从"你的一天有几个小时"出发，推演到注意力经济、算法收割与一个被忽视事实——你花注意力的地方，就是你正在变成的人。<br>没有效率鸡汤，只有时间的冷峻清算。</p>
+<div class="hero-scroll"><span></span></div>
+</header>
+
+<main class="content">
+
+<section class="chapter" id="ch1">
+<div class="chapter-number">Chapter I</div>
+<h2>注意力的灵魂：你以为时间是你的最宝贵资源——其实不是</h2>
+
+<p>让我问你一个看似简单的问题：你每天拥有多少时间？</p>
+
+<p>24小时。听起来不少。但让我们做一次冷酷的清算——</p>
+
+<p>睡眠8小时。工作8小时。通勤、吃饭、洗漱3小时。剩下5小时。</p>
+
+<p>而在这5小时里，真正能够<strong>被你有意识地、专注地使用</strong>的时间——不是发呆、不是被动刷手机、不是心不在焉——可能只有1-2小时。对，就是1-2小时。</p>
+
+<div class="insight-box">
+注意力的本质，用一句话说：<br><br>
+<strong>时间不是你最稀缺的资源——"有意识地分配的注意力"才是。</strong><br><br>
+时间是物理量，所有人一天都是24小时。但<strong>注意力是生物量</strong>——它是你的大脑在任一瞬间能够聚焦、加工、记忆一件事的能量。它极其有限，每天可能只有几小时的"高质量注意力配额"。<br><br>
+而且,注意力不会被"保存"——它是一种<strong>流</strong>。它此刻流向哪里,哪里就被你"体验"为现实。你没有流向的事物,对你来说等同于不存在。<br><br>
+<span class="key-point">这意味着一个震撼的结论:你的人生体验,不由你实际经历了什么决定——而由你的注意力实际流向了什么决定。</span>
+</div>
+
+<p>两个人住在同一个城市、走同一条路上班。但 A 一路上注意力流向了路边的花、邻居的笑脸、天上的云。B 的注意力流向了手机上的热搜、同事的八卦、未回的邮件。<strong>他们走的是同一条路——但他们活的不是同一种人生。</strong></p>
+
+<div class="chain">
+<span class="node">时间：所有人相同</span>
+<span class="arrow">≠</span>
+<span class="node">注意力：有限且主观</span>
+<span class="arrow">→</span>
+<span class="node">注意力流向=你的真实人生</span>
+<span class="arrow">→</span>
+<span class="node">失去注意力主权=失去人生主权</span>
+</div>
+</section>
+
+<div class="section-divider">· · ·</div>
+
+<section class="chapter" id="ch2">
+<div class="chapter-number">Chapter II</div>
+<h2>原始模型：聚光灯与暗房——注意力如何塑造你的现实</h2>
+
+<div class="scene-box light">
+<h3>场景设定：一个黑暗的剧场</h3>
+<p>想象你坐在一个完全黑暗的剧场里。舞台上只有一束聚光灯。光打到哪里,哪里就"出现"了演员、道具、情节。光没照到的地方,存在也等于不存在——你看不见,它就不在你的世界里。</p>
+<p><strong>你的注意力,就是这束聚光灯。</strong>你的整个意识世界,就是这座剧场。</p>
+<p>你此刻正在读的这段文字——被聚光灯照着。你身后发生的事——在暗房里。你脚下地板的质感、皮肤上的空气流动、背景的环境音——它们物理上存在,但因为聚光灯没照到,它们不在你的意识里。</p>
+</div>
+
+<p>这不是比喻。这是认知神经科学的严格事实。你的大脑每秒接收到的感觉数据量极其庞大——但真正进入意识加工的只是极小一部分。<strong>注意力的本质,就是大脑在几十亿比特的输入数据中"选择性聚焦"的那一小块。</strong></p>
+
+<div class="scene-box mirror">
+<h3>一个更令人不安的事实</h3>
+<p>你的注意力流向什么,不仅决定了你"体验到"什么——它还决定了你"变成"什么样的人。</p>
+<p>每天把注意力流向焦虑的新闻?几个月后,你的大脑对"威胁"变得过度敏感——你开始在任何场景里本能地寻找危险。</p>
+<p>每天把注意力流向他人的比较和嫉妒?几个月后,你看任何东西的第一反应都是"他比我怎样"——你失去了无条件欣赏的能力。</p>
+<p>每天把注意力流向深度阅读和长文思考?几个月后,你的大脑建立了强大的逻辑连接——你开始能看见事物背后的结构。</p>
+<p><strong>神经可塑性意味着:你反复聚焦的东西,会在大脑中刻出物理性的神经通路。</strong>一个月后,你不再是"选择"关注什么——你变成了"只能"关注某些东西。</p>
+</div>
+
+<div class="insight-box">
+这就是注意力最深的秘密——<strong>它是塑造者,而不仅是观察者。</strong><br><br>
+你不是"先成为某种人,然后关注某些事物"。<br>
+顺序恰恰相反:<strong>你反复关注什么,你就逐渐变成什么。</strong><br><br>
+一个每天花6小时刷短视频的人,不是"因为他浮躁所以刷短视频",而是<strong>"因为他刷了6小时短视频所以他变浮躁了"</strong>。他的大脑被这种输入模式物理性地重塑了。<br><br>
+<span class="key-point">注意力不是你的"工具"——注意力是你用来雕刻自己的那把刻刀。你用它刻什么,你就变成什么形状。</span>
+</div>
+
+<div class="chain">
+<span class="node">注意力=大脑的聚光灯</span>
+<span class="arrow">→</span>
+<span class="node">反复聚焦某类信息</span>
+<span class="arrow">→</span>
+<span class="node">神经通路被物理强化</span>
+<span class="arrow">→</span>
+<span class="node">你的"默认视角"被重塑</span>
+<span class="arrow">→</span>
+<span class="node">你成为了你所关注的</span>
+</div>
+</section>
+
+<div class="section-divider">· · ·</div>
+
+<section class="chapter" id="ch3">
+<div class="chapter-number">Chapter III</div>
+<h2>注意力经济:你不是用户——你是产品</h2>
+
+<p>当注意力被证明是极其稀缺的资源,就必然诞生一个市场——<strong>注意力经济</strong>。</p>
+
+<p>这个经济的基本规律冷酷而清晰:</p>
+
+<div class="scene-box coin">
+<h3>你免费使用的一切,都在交易你的注意力</h3>
+<p>免费的社交媒体、免费的短视频平台、免费的新闻 App、免费的搜索引擎——它们为什么免费?</p>
+<p>因为你不是它们的客户。<strong>广告商才是它们的客户。而你,是它们卖给广告商的产品。</strong></p>
+<p>这些平台真正的商品不是内容,而是"你的注意力"。它们把你的注意力一小块一小块地切开,打包,以广告的形式卖给出价最高的买家。</p>
+<p>它们的商业模式可以用一句话概括:<strong>最大化你停留的时间,最大化你被投放广告的次数。</strong></p>
+</div>
+
+<p>请你停下来意识一下这件事的严重性——</p>
+
+<p>硅谷最聪明的几千个工程师、数据科学家、心理学家,加上世界上最强大的计算资源,他们每天的工作是什么?——<strong>设计出最能让你停不下来的产品</strong>。他们有你的行为数据,他们有实时 A/B 测试,他们有机器学习模型在毫秒级别优化每一次推荐。</p>
+
+<p>而你面对这一切,只有一个被二十万年进化出来的、在大草原上求生的大脑。</p>
+
+<div class="scene-box hook">
+<h3>他们劫持你注意力用的三把钩子</h3>
+<p><strong>钩子一:间歇性奖励。</strong>下一条视频可能是让你爆笑的,也可能是平平无奇的。这种"不确定的奖励"是最强的成瘾机制——赌博机的原理。你的大脑会分泌大量多巴胺持续地"再看一条",因为永远不知道下一个"爆点"什么时候来。</p>
+<p><strong>钩子二:社交认同焦虑。</strong>"别人都在看/别人都在谈论/你不看就落伍了"。利用你的部落本能——离群=死亡。所以你被迫刷,生怕错过什么"大家都知道"的事。</p>
+<p><strong>钩子三:情绪投喂。</strong>推荐算法发现:愤怒和恐惧类内容让你停留最久。于是你的信息流被算法精准地调成"愤怒/恐惧"频道——你以为世界变得越来越糟,其实只是算法发现"糟糕的世界"最能抓住你。</p>
+</div>
+
+<div class="insight-box">
+注意力经济的冷酷真相:<br><br>
+<strong>在这个时代,你的注意力被"有系统地、有策略地、有科学依据地"掠夺。</strong>这不是道德问题——这是商业模式的数学必然。一个靠广告盈利的平台,如果不最大化你的停留时间,就会在竞争中输给那些更擅长"留住你"的平台。优胜劣汰之后,留下来的全都是最擅长劫持你注意力的平台。<br><br>
+<span class="key-point">你不是被某一家公司在针对——你是被整个注意力经济系统在围猎。在这个系统里,你的"自由选择"是一种幻觉。你以为你在主动刷手机,实际上每一次滑动、每一次点击、每一次停留,都是被精心设计过的行为触发。</span>
+</div>
+
+<div class="chain">
+<span class="node">免费平台=你是产品</span>
+<span class="arrow">→</span>
+<span class="node">目标:最大化你的停留时间</span>
+<span class="arrow">→</span>
+<span class="node">动用行为心理学+AI精准劫持</span>
+<span class="arrow">→</span>
+<span class="node">你的注意力被系统性掠夺</span>
+</div>
+</section>
+
+<div class="section-divider">· · ·</div>
+
+<section class="chapter" id="ch4">
+<div class="chapter-number">Chapter IV</div>
+<h2>被编程的你:注意力碎片化后,"你"还剩下什么</h2>
+
+<p>让我们冷静地推演,长期被劫持注意力会产生什么后果。</p>
+
+<div class="scene-box clock">
+<h3>第一个后果:你失去了"深度"</h3>
+<p>深度工作、深度阅读、深度思考——它们都有一个共同前提:<strong>注意力能够在同一个对象上停留足够长的时间而不被打断</strong>。深度不是"智商"决定的,而是"专注时长"决定的。</p>
+<p>一个每天注意力被手机通知、热搜推送、微信弹窗切碎几百次的人,她的大脑建立的是"快速切换+浅层反应"的回路。几个月后,即使她想深度思考,她也做不到了——坐下来看书十分钟就坐立不安,必须拿起手机。她的"深度阅读能力"被物理性地削弱了。</p>
+<p><strong>这不是她懒。这是她的大脑被长期输入的注意力模式重塑了。</strong>而所有真正有价值的创造——写作、研究、艺术、战略思考——都需要深度。失去深度,你就失去了创造"复杂价值"的能力。你只能做那些表浅的、可被打断的、容易被AI替代的工作。</p>
+</div>
+
+<div class="scene-box mirror">
+<h3>第二个后果:你不再认识"自己"</h3>
+<p>"自我认知"这件事,需要一个极其宝贵的前提——<strong>独处时的无聊</strong>。</p>
+<p>在无聊中,大脑的"默认模式网络"启动——它开始整理记忆、反思感受、连接零散的想法、产生自我觉察。这是所有深刻的自我认知、创造性洞察、人生决策的来源。</p>
+<p>但现代人已经几乎不允许自己"无聊"了。排队30秒就掏手机。蹲厕所拿手机。睡前刷到凌晨。早上醒来第一件事看手机。<strong>每一个"无聊时刻"都被立刻填满。</strong></p>
+<p>结果是什么?你的默认模式网络几乎没机会启动。你不再反思,不再整理,不再真正感受自己的感受。你越来越不知道自己真正想要什么、真正害怕什么、真正珍视什么——因为产生这些答案所需要的"内在安静"已经被永久性地消费掉了。</p>
+<p><strong>你没有变空虚——你只是再也没给自己留出发现"自己不空虚"的时间。</strong></p>
+</div>
+
+<div class="insight-box">
+第三个后果最致命:<strong>你的情绪被外部事件全面接管。</strong><br><br>
+当你的注意力长期处于被动接收状态——不断被热搜、新闻、算法推送劫持——你的情绪状态就被这些外部输入决定了。今天看到一条让人愤怒的新闻,你愤怒一整天。明天看到一条让人焦虑的社会事件,你焦虑一整天。<br><br>
+你以为你是"被外部世界影响的敏感之人",其实你是被算法精确投喂情绪燃料的数据对象。你的情绪不再由你的实际生活决定——而由屏幕上滚动过的信息流决定。<br><br>
+<span class="key-point">最终状态:你活在一个被算法塑造的情绪虚拟现实里。你的生活可能非常平静,但你的内心每天都在经历被陌生人决定的情绪风暴。</span><br><br>
+这是注意力经济对你最深的伤害——<strong>它不只偷走了你的时间。它偷走了你情绪的自主权。</strong>
+</div>
+
+<div class="chain">
+<span class="node">注意力被碎片化</span>
+<span class="arrow">→</span>
+<span class="node">失去深度+失去自我认知+失去情绪自主</span>
+<span class="arrow">→</span>
+<span class="node">你成为一个被算法塑造的"人形消费者"</span>
+</div>
+</section>
+
+<div class="section-divider">· · ·</div>
+</main>
+
+<section class="finale" id="ch5">
+<div class="finale-inner">
+<div class="chapter-number" style="color:var(--gold-light)">Chapter V</div>
+<h2>本质总结:夺回你的注意力主权</h2>
+
+<p>让我们把整条逻辑链串一遍。注意力不是时间——它是塑造你成为什么样的人的刻刀。你反复关注什么,你就在神经层面逐渐变成什么。现代注意力经济系统性地、有科学依据地劫持你的注意力,因为你的停留时间是它们的商品。长期被劫持的后果是:失去深度、失去自我认知、失去情绪自主——你不再是一个完整的人,而是一个被算法塑造的消费对象。</p>
+
+<ul class="finale-rules">
+<li><span class="num">1</span><span><strong>你的注意力流向,就是你正在变成的人。</strong> 每天花6小时刷短视频的人,正在变成一个无法深度思考的人。每天花2小时深度阅读的人,正在变成一个思想越来越有厚度的人。这不是"选择习惯"——这是选择自己未来的版本。你想变成什么样的人?先检查你的注意力每天流向了什么。</span></li>
+<li><span class="num">2</span><span><strong>"免费"从来不是免费——你只是在用注意力付费。</strong> 每次你打开一个免费 App 之前,问自己:我接下来要用多少分钟的生命,换取多少分钟的刺激/信息/娱乐?这个账算得过来吗?如果算不过来——那就是在被低价收购你的生命。</span></li>
+<li><span class="num">3</span><span><strong>重新学会"无聊",是夺回自我的关键一步。</strong> 排队时不掏手机。吃饭时不放视频。睡前一小时不看屏幕。给大脑留出"什么都不做"的空间——这不是浪费时间,这是让你的默认模式网络启动、让你重新遇见自己的必要条件。"无聊"不是敌人——"不允许自己无聊"才是。</span></li>
+<li><span class="num">4</span><span><strong>设计你的注意力环境,而不是依赖意志力。</strong> 你无法用意志力长期对抗硅谷几千个工程师的精心设计——这是不对称战争。更有效的是改变环境:手机放远、关闭通知、删掉最容易劫持你的 App、设置屏幕使用时间限制。不要和诱惑正面对抗——把诱惑从你的视野里拿走。</span></li>
+<li><span class="num">5</span><span><strong>最深的自由,是选择"不关注"的能力。</strong> 这个时代不缺信息,缺的是"过滤信息"的能力。每一次你选择不点开某条热搜、不参与某场无意义的争论、不追随某个算法推给你的情绪——都是在行使你最高级的自由。<strong>能关注的人很多。能选择不关注的人,才是真正自由的人。</strong>这种克制不是冷漠——这是对自己生命最后的尊重。</span></li>
+</ul>
+
+<div class="insight-box" style="margin-top:48px">
+注意力的终极启示是:<strong>你的注意力,就是你的生命本身。</strong><br><br>
+你生命的总量,不是你活了多少年——而是你真正"在场"的那些时刻的总和。你心不在焉的时间,等于没活过。你被算法劫持的时间,等于别人替你活过。<br><br>
+<strong>夺回你的注意力,就是夺回你的生命。</strong><br><br>
+这不是一个关于"效率"的话题。这是一个关于"你将成为谁、你将如何度过这一生"的根本问题。
+</div>
+</div>
+</section>
+
+<div class="colophon">— FIN —</div>
+
+<script>
+const chapters=document.querySelectorAll('.chapter'),tocLinks=document.querySelectorAll('.toc a');
+const observer=new IntersectionObserver(e=>{e.forEach(e=>{e.isIntersecting&&e.target.classList.add('visible')})},{threshold:.15});
+chapters.forEach(c=>observer.observe(c));
+const sections=document.querySelectorAll('.chapter,.finale');
+window.addEventListener('scroll',()=>{let c='';sections.forEach(s=>{window.scrollY>=s.offsetTop-200&&(c=s.id)});tocLinks.forEach(l=>{l.classList.toggle('active',l.getAttribute('href')==='#'+c)})});
+</script>
+</body>
+</html>
